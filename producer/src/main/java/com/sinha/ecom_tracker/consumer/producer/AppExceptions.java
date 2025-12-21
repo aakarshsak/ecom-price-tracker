@@ -1,4 +1,4 @@
-package com.sinha.ecom_tracker.producer;
+package com.sinha.ecom_tracker.consumer.producer;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

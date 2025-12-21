@@ -1,4 +1,4 @@
-package com.sinha.ecom_tracker.producer;
+package com.sinha.ecom_tracker.consumer.producer;
 
 
 import org.springframework.beans.factory.annotation.Autowired;

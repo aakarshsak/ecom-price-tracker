@@ -1,11 +1,10 @@
-package com.sinha.ecom_tracker.producer;
+package com.sinha.ecom_tracker.consumer.producer;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 
 import java.util.concurrent.CompletableFuture;
 

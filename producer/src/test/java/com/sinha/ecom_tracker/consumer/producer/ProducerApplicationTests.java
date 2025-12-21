@@ -1,4 +1,4 @@
-package com.sinha.ecom_tracker.producer;
+package com.sinha.ecom_tracker.consumer.producer;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

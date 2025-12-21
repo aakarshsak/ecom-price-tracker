@@ -1,4 +1,4 @@
-package com.sinha.ecom_tracker.producer;
+package com.sinha.ecom_tracker.consumer.producer;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

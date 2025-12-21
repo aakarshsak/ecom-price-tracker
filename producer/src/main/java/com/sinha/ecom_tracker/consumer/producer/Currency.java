@@ -1,4 +1,4 @@
-package com.sinha.ecom_tracker.producer;
+package com.sinha.ecom_tracker.consumer.producer;
 
 public enum Currency {
     USD,
