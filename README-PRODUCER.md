@@ -10,7 +10,7 @@ A step-by-step guide to building a Spring Boot Kafka Producer that simulates rea
 2. [Project Setup](#project-setup)
 3. [Kafka Configuration](#kafka-configuration)
 4. [Creating the Message Model](#creating-the-message-model)
-5. [Building the Producer Service](#building-the-producer-service)
+5. [Building the Producer Services](#building-the-producer-service)
 6. [Simulating Events](#simulating-events)
 7. [Testing Your Producers](#testing-your-producer)
 8. [Production Considerations](#production-considerations)
