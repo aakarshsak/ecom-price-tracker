@@ -1,17 +1,46 @@
 services:
-  mysql: 
-    image: mysql:8.0
-    container_name: mysql_container
+  db: 
+    image: postgres:16
+    container_name: db_container
     restart: no
     environment:
-      MYSQL_ROOT_PASSWORD: password
-      MYSQL_DATABASE: testdb
-      MYSQL_USER: user
-      MYSQL_PASSWORD: ecompass
+      POSTGRES_DB: testdb
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
     ports:
-      - "3306:3306"
+      - "5432:5432"
     volumes:
-      - mysql_data:/var/lib/mysql
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - pg_network
+
+  timescaledb:
+    image: timescale/timescaledb:latest-pg16
+    container_name: timescale_container
+    restart: no
+    environment: 
+      POSTGRES_DB: timescale
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    ports: 
+      - "5433:5433"
+    volumes:
+      - timescaledb-data:/var/lib/postgresql/data
+
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin_container
+    restart: no
+    ports:
+      - "5050:80"
+    networks:
+      - pg_network
+    environment:
+      PGADMIN_DEFAULT_EMAIL: aakarshsak@gmail.com
+      PGADMIN_DEFAULT_PASSWORD: password
+    depends_on:
+      - db
 
   kafka: 
     image: apache/kafka:latest
@@ -54,6 +83,11 @@ services:
      - redis_data:/data
 
 volumes:
-  mysql_data:
+  postgres_data:
+  timescaledb-data:
   redis_data:
     driver: local
+
+
+networks:
+  pg_network:

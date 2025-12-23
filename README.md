@@ -1,6 +1,6 @@
-# 🚀 Cloud-Native Event-Driven Order Management Platform
+# 📈 Cloud-Native Event-Driven Trading Platform
 
-A production-grade microservices system similar to what companies like **Amazon**, **Razorpay**, **Swiggy**, or **Flipkart** run internally.
+A production-grade microservices trading system similar to what companies like **Zerodha**, **Groww**, **Upstox**, **Binance**, or **Robinhood** run internally.
 
 ---
 
@@ -8,8 +8,9 @@ A production-grade microservices system similar to what companies like **Amazon*
 
 | Principle | Status |
 |-----------|--------|
-| No monolith — microservices from Day 1 | ❌ |
+| No monolith — microservices from Day 1 | ✅ |
 | Event-driven (async first) | ✅ |
+| Real-time data streaming | ✅ |
 | Container-first (Docker + EKS) | ✅ |
 | Infra as Code | ✅ |
 | Observability + security baked in | ✅ |
@@ -20,34 +21,58 @@ A production-grade microservices system similar to what companies like **Amazon*
 
 | Service | Responsibility | DB |
 |---------|---------------|-----|
-| **Auth Service** | User auth, JWT, roles | RDS |
-| **User Service** | Profile & preferences | RDS |
-| **Catalog Service** | Products, pricing | DynamoDB |
-| **Order Service** | Order lifecycle | RDS |
-| **Payment Service** | Payment orchestration | RDS |
-| **Inventory Service** | Stock mgmt | DynamoDB |
-| **Notification Service** | Email/SMS/Push | — |
-| **Analytics Service** | Event processing | Kinesis |
-| **Gateway Service** | Routing, auth filter | — |
+| **Gateway Service** | Routing, rate limiting, auth filter | — |
+| **Auth Service** | User auth, JWT, 2FA, sessions | Redis + RDS |
+| **User Service** | Profile, KYC, preferences | RDS |
+| **Market Data Service** | Real-time prices, charts, historical data | Redis + TimescaleDB |
+| **Order Service** | Order placement, modification, cancellation | RDS |
+| **Matching Engine** | Order matching, trade execution | In-Memory + RDS |
+| **Portfolio Service** | Holdings, P&L, positions | RDS |
+| **Wallet Service** | Funds, deposits, withdrawals | RDS |
+| **Risk Service** | Margin checks, position limits, circuit breakers | Redis |
+| **Notification Service** | Trade alerts, price alerts, SMS/Push | — |
+| **Analytics Service** | Trading reports, performance metrics | Kinesis + S3 |
 
 ---
 
-## 🗺️ AWS Architecture (Microservices-Only)
+## 🗺️ Trading Platform Architecture
 
 ```
-                        Client
-                          |
-                    API Gateway (AWS)
-                          |
-                Spring Cloud Gateway (EKS)
-                          |
-    ---------------------------------------------------------
-    | Auth | User | Catalog | Order | Payment | Inventory  |
-    ---------------------------------------------------------
-                          |
-                  EventBridge / SNS
-                          |
-            Notification | Analytics | Lambda
+                           Client Apps
+                    (Web / Mobile / Trading Terminal)
+                                │
+                       ┌────────▼────────┐
+                       │   API Gateway   │
+                       │ (Rate Limiting) │
+                       └────────┬────────┘
+                                │
+                       ┌────────▼────────┐
+                       │  Spring Cloud   │
+                       │    Gateway      │
+                       └────────┬────────┘
+                                │
+    ┌───────────────────────────┼───────────────────────────┐
+    │                           │                           │
+┌───▼───┐  ┌───────┐  ┌────────▼────────┐  ┌───────┐  ┌────▼────┐
+│ Auth  │  │ User  │  │  Market Data    │  │ Order │  │ Wallet  │
+│Service│  │Service│  │    Service      │  │Service│  │ Service │
+└───────┘  └───────┘  └────────┬────────┘  └───┬───┘  └─────────┘
+                               │               │
+                        WebSocket          ┌───▼───────────┐
+                        (Real-time)        │Matching Engine│
+                               │           └───────┬───────┘
+                               │                   │
+                    ┌──────────▼───────────────────▼──────────┐
+                    │              Kafka Cluster              │
+                    │  (Order Events, Trade Events, Prices)   │
+                    └──────────────────┬──────────────────────┘
+                                       │
+           ┌───────────────────────────┼───────────────────────────┐
+           │                           │                           │
+    ┌──────▼──────┐           ┌────────▼────────┐         ┌───────▼───────┐
+    │  Portfolio  │           │   Risk Service  │         │ Notification  │
+    │   Service   │           │ (Margin/Limits) │         │    Service    │
+    └─────────────┘           └─────────────────┘         └───────────────┘
 ```
 
 ---
@@ -58,84 +83,107 @@ A production-grade microservices system similar to what companies like **Amazon*
 
 #### EC2
 - Worker nodes for EKS
-- Auto Scaling Groups
+- High-performance instances for Matching Engine
 
 #### EKS (Primary)
 - Runs all Spring Boot microservices
-- HPA for traffic spikes
+- HPA for market hours scaling
 
 #### ECS + Fargate
 - Notification service (serverless containers)
-
-#### Elastic Beanstalk (Optional)
-- ❌ Skip deployment
-- ✅ Use only to understand config, not architecture
+- Scheduled jobs
 
 ---
 
 ### 🗄 Databases & Storage
 
-#### RDS (MySQL/Postgres)
-- Transactions
-- Orders
-- Users
+#### RDS (PostgreSQL)
+- Users, Orders, Trades
+- Wallet transactions
+- Audit logs
 
-#### DynamoDB
-- Catalog
-- Inventory (high write throughput)
+#### Redis (ElastiCache)
+- Real-time price cache
+- Session management
+- Rate limiting counters
+- Order book snapshots
+
+#### TimescaleDB (on EC2/RDS)
+- Historical price data (OHLCV)
+- Time-series analytics
 
 #### S3
-- Invoices
-- Logs
-- Static assets
+- Trade reports
+- KYC documents
+- Historical data archives
 
 ---
 
-### ⚡ Cache
+### ⚡ Cache & Real-time
 
 #### Redis (ElastiCache)
-- Product cache
-- JWT blacklist
-- Rate limiting
+- Market data cache (sub-millisecond reads)
+- User session tokens
+- Position cache
+- Circuit breaker states
+
+#### ElastiCache for Redis Cluster
+- Distributed caching for high availability
 
 ---
 
 ### 🌐 Networking & Security
 
 #### VPC
-- **Public:** ALB, NAT
-- **Private:** EKS, RDS, Redis
+- **Public:** ALB, NAT Gateway
+- **Private:** EKS, RDS, Redis, Matching Engine
 
 #### IAM
 - IRSA for pods
-- Least privilege
+- Least privilege access
+- MFA enforcement
+
+#### WAF
+- DDoS protection
+- Rate limiting at edge
+
+#### Secrets Manager
+- API keys
+- Database credentials
+- Third-party integrations
 
 ---
 
 ### 📩 Messaging & Streaming
 
+#### Kafka (MSK)
+- Order events
+- Trade executions
+- Price updates
+- Risk alerts
+
 #### SQS
-- Order processing queue
-- Payment retries
+- Notification queue
+- Report generation queue
+- Withdrawal processing
 
 #### SNS
-- Order events fan-out
-
-#### EventBridge
-- Domain event routing
-- Decoupling services
+- Trade confirmations fan-out
+- Alert broadcasting
 
 #### Kinesis
-- Analytics stream
+- Real-time analytics stream
+- Market data ingestion
 
 ---
 
 ### 🧠 Serverless
 
 #### Lambda
-- Invoice generation
-- Image resize
-- Async email trigger
+- Report generation (PDF)
+- KYC document processing
+- Price alert triggers
+- EOD reconciliation
 
 ---
 
@@ -143,14 +191,15 @@ A production-grade microservices system similar to what companies like **Amazon*
 
 #### CloudWatch
 - Logs
+- Custom metrics (orders/sec, latency)
 - Alarms
-- Dashboards
 
 #### X-Ray
-- Distributed tracing across services
+- Distributed tracing (order → trade flow)
 
 #### CloudTrail
-- Audit AWS API calls
+- Audit all AWS API calls
+- Compliance logging
 
 ---
 
@@ -163,46 +212,57 @@ A production-grade microservices system similar to what companies like **Amazon*
 - Test + Docker image
 
 #### CodeDeploy
-- Blue-Green deployment (EKS)
+- Blue-Green deployment (zero downtime)
 
 ---
 
-### 🏗 Infrastructure as Code
+## 🧪 Example Event Flows (Interview-Gold)
 
-#### Terraform (Recommended)
-- VPC
-- EKS
-- RDS
-- IAM
-- Redis
-- SQS/SNS
-
-#### OR
-
-#### AWS CDK
-- Java-friendly option
-
----
-
-## 🧪 Example Event Flow (Interview-Gold)
-
-### Order Placement Flow
+### 📊 Order Placement → Trade Execution Flow
 
 ```
-1. Client → API Gateway → Order Service
-2. Order saved in RDS
-3. OrderCreated event → SNS/EventBridge
-4. Inventory Service consumes → updates stock
-5. Payment Service consumes → charges user
-6. Notification Service sends confirmation
-7. Analytics Service streams to Kinesis
+1. Client → Gateway → Order Service (Place Buy Order)
+2. Order Service → Risk Service (Sync: Margin check)
+3. Risk Service validates → Returns OK/REJECT
+4. Order Service saves order (Status: PENDING)
+5. Order Service → Kafka: "OrderCreated" event
+6. Matching Engine consumes → Matches with sell orders
+7. Matching Engine → Kafka: "TradeExecuted" event
+8. Portfolio Service consumes → Updates holdings
+9. Wallet Service consumes → Debits funds
+10. Notification Service → Sends trade confirmation
+11. Analytics Service → Streams to Kinesis
+```
+
+### 📈 Real-time Price Update Flow
+
+```
+1. External Feed → Market Data Service (WebSocket/REST)
+2. Market Data Service → Redis (Update price cache)
+3. Market Data Service → Kafka: "PriceUpdated" event
+4. Risk Service consumes → Checks margin calls
+5. Notification Service → Triggers price alerts
+6. WebSocket Server → Pushes to subscribed clients
+```
+
+### 💰 Withdrawal Request Flow
+
+```
+1. Client → Wallet Service (Withdrawal request)
+2. Wallet Service → User Service (KYC verification)
+3. Wallet Service → Risk Service (Check open positions)
+4. Wallet Service saves request (Status: PENDING)
+5. Wallet Service → SQS: Withdrawal queue
+6. Lambda processes → Initiates bank transfer
+7. Wallet Service updates → Status: COMPLETED
+8. Notification Service → Sends confirmation
 ```
 
 ---
 
 ## 🧾 Resume-Ready Description
 
-> Designed and implemented a cloud-native, event-driven microservices platform using **Java 17 & Spring Boot**, deployed on **AWS EKS**, leveraging **Redis**, **RDS**, **DynamoDB**, **SQS**, **SNS**, **EventBridge**, **Lambda**, and **Terraform**, with full **CI/CD** and distributed tracing via **CloudWatch & X-Ray**.
+> Designed and implemented a cloud-native, event-driven **real-time trading platform** using **Java 17 & Spring Boot**, deployed on **AWS EKS**, featuring a **high-performance matching engine**, **real-time market data streaming** via WebSockets, leveraging **Redis**, **PostgreSQL**, **Kafka (MSK)**, **Kinesis**, and **Terraform**, with comprehensive **risk management**, **CI/CD pipelines**, and distributed tracing via **CloudWatch & X-Ray**.
 
 ---
 
@@ -210,10 +270,12 @@ A production-grade microservices system similar to what companies like **Amazon*
 
 | Strength | ✔ |
 |----------|---|
-| No monolith | ✔ |
-| Real AWS usage | ✔ |
+| Real-time data streaming | ✔ |
+| High-throughput matching engine | ✔ |
+| Event-driven architecture | ✔ |
+| Financial domain complexity | ✔ |
 | Clear microservice boundaries | ✔ |
-| Event-driven | ✔ |
+| Production-grade observability | ✔ |
 | Resume + interview friendly | ✔ |
 
 ---
@@ -229,7 +291,7 @@ A production-grade microservices system similar to what companies like **Amazon*
 ## 📁 Project Structure
 
 ```
-📁 order-management-platform/
+📁 trading-platform/
 ├── 📁 infrastructure/
 │   ├── docker-compose.yml
 │   ├── docker-compose.prod.yml
@@ -238,14 +300,17 @@ A production-grade microservices system similar to what companies like **Amazon*
 │   ├── gateway-service/
 │   ├── auth-service/
 │   ├── user-service/
-│   ├── catalog-service/
+│   ├── market-data-service/
 │   ├── order-service/
-│   ├── payment-service/
-│   ├── inventory-service/
+│   ├── matching-engine/
+│   ├── portfolio-service/
+│   ├── wallet-service/
+│   ├── risk-service/
 │   └── notification-service/
 ├── 📁 common/
 │   ├── common-dto/
-│   └── common-events/
+│   ├── common-events/
+│   └── common-utils/
 └── 📁 deployment/
     ├── terraform/
     └── kubernetes/
@@ -258,10 +323,12 @@ A production-grade microservices system similar to what companies like **Amazon*
 | Layer | Local | AWS |
 |-------|-------|-----|
 | **Runtime** | Docker Compose | EKS |
-| **Database** | MySQL (Docker) | RDS MySQL |
+| **Database** | PostgreSQL (Docker) | RDS PostgreSQL |
+| **Time-series DB** | TimescaleDB (Docker) | TimescaleDB on EC2 |
 | **Messaging** | Kafka (Docker) | MSK |
 | **Cache** | Redis (Docker) | ElastiCache |
 | **Gateway** | Spring Cloud Gateway | Same + ALB |
+| **WebSocket** | Spring WebSocket | Same + API Gateway WebSocket |
 | **Secrets** | .env files | AWS Secrets Manager |
 | **Logs** | Console/File | CloudWatch |
 | **Tracing** | Jaeger | X-Ray |
@@ -275,11 +342,12 @@ A production-grade microservices system similar to what companies like **Amazon*
 
 ```
 📦 docker-compose.yml
-├── MySQL (port 3306)
+├── PostgreSQL (port 5432)
+├── TimescaleDB (port 5433)
 ├── Kafka + Zookeeper (port 9092)
 ├── Redis (port 6379)
-├── Kafka UI (for debugging)
-└── phpMyAdmin/Adminer (optional - DB UI)
+├── Kafka UI (port 8090)
+└── pgAdmin (optional - DB UI)
 ```
 
 ### Day 3-4: Project Structure Setup
@@ -288,20 +356,22 @@ Create the base project structure and configure Maven/Gradle multi-module projec
 
 ---
 
-## 📅 Phase 2: Core Services Development (Week 2-3)
+## 📅 Phase 2: Core Services Development (Week 2-4)
 
 ### Service Build Priority (In This Sequence)
 
 | Order | Service | Why First? |
 |-------|---------|------------|
 | 1 | **Gateway Service** | Entry point, routing |
-| 2 | **Auth Service** | JWT, security foundation |
-| 3 | **User Service** | Profile management |
-| 4 | **Catalog Service** | Products (read-heavy) |
-| 5 | **Inventory Service** | Stock management |
-| 6 | **Order Service** | Core business logic |
-| 7 | **Payment Service** | Payment orchestration |
-| 8 | **Notification Service** | Async notifications |
+| 2 | **Auth Service** | JWT, 2FA, security foundation |
+| 3 | **User Service** | Profile, KYC management |
+| 4 | **Market Data Service** | Real-time prices, WebSocket |
+| 5 | **Wallet Service** | Funds management |
+| 6 | **Risk Service** | Margin checks, limits |
+| 7 | **Order Service** | Order lifecycle |
+| 8 | **Matching Engine** | Trade execution (core logic) |
+| 9 | **Portfolio Service** | Holdings, P&L |
+| 10 | **Notification Service** | Alerts, confirmations |
 
 ### Each Service Structure
 
@@ -316,6 +386,7 @@ Create the base project structure and configure Maven/Gradle multi-module projec
 │   ├── kafka/
 │   │   ├── producer/
 │   │   └── consumer/
+│   ├── websocket/
 │   └── config/
 │       └── SwaggerConfig.java
 ├── src/main/resources/
@@ -363,7 +434,7 @@ springdoc:
 #### Step 3: Create SwaggerConfig.java
 
 ```java
-package com.order.config;
+package com.trading.config;
 
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
@@ -382,9 +453,9 @@ public class SwaggerConfig {
     public OpenAPI customOpenAPI() {
         return new OpenAPI()
             .info(new Info()
-                .title("Order Service API")
+                .title("Trading Platform API")
                 .version("1.0.0")
-                .description("REST API for Order Management")
+                .description("REST API for Trading Platform")
                 .contact(new Contact()
                     .name("Your Name")
                     .email("your.email@example.com"))
@@ -413,22 +484,23 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @Tag(name = "Order", description = "Order management APIs")
 public class OrderController {
 
-    @Operation(summary = "Create a new order", description = "Creates a new order and returns order details")
+    @Operation(summary = "Place a new order", description = "Places a buy/sell order for a symbol")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "201", description = "Order created successfully"),
-        @ApiResponse(responseCode = "400", description = "Invalid request"),
-        @ApiResponse(responseCode = "401", description = "Unauthorized")
+        @ApiResponse(responseCode = "201", description = "Order placed successfully"),
+        @ApiResponse(responseCode = "400", description = "Invalid order request"),
+        @ApiResponse(responseCode = "401", description = "Unauthorized"),
+        @ApiResponse(responseCode = "422", description = "Insufficient funds/margin")
     })
     @PostMapping
-    public ResponseEntity<OrderResponse> createOrder(
+    public ResponseEntity<OrderResponse> placeOrder(
             @Parameter(description = "Order details") @RequestBody OrderRequest request) {
         // implementation
     }
 
     @Operation(summary = "Get order by ID")
-    @GetMapping("/{id}")
+    @GetMapping("/{orderId}")
     public ResponseEntity<OrderResponse> getOrder(
-            @Parameter(description = "Order ID", required = true) @PathVariable Long id) {
+            @Parameter(description = "Order ID", required = true) @PathVariable String orderId) {
         // implementation
     }
 }
@@ -442,29 +514,37 @@ import io.swagger.v3.oas.annotations.media.Schema;
 @Schema(description = "Order Request DTO")
 public class OrderRequest {
 
-    @Schema(description = "Customer ID", example = "12345", required = true)
-    private Long customerId;
+    @Schema(description = "Trading symbol", example = "AAPL", required = true)
+    private String symbol;
 
-    @Schema(description = "List of order items", required = true)
-    private List<OrderItemRequest> items;
+    @Schema(description = "Order type", example = "LIMIT", allowableValues = {"MARKET", "LIMIT", "STOP_LOSS"})
+    private OrderType orderType;
 
-    @Schema(description = "Shipping address", example = "123 Main St, City")
-    private String shippingAddress;
+    @Schema(description = "Order side", example = "BUY", allowableValues = {"BUY", "SELL"})
+    private OrderSide side;
+
+    @Schema(description = "Quantity", example = "100", required = true)
+    private Integer quantity;
+
+    @Schema(description = "Limit price (required for LIMIT orders)", example = "150.50")
+    private BigDecimal price;
 }
 ```
 
 #### Swagger UI URLs (Per Service)
 
-| Service | Swagger UI URL | API Docs URL |
-|---------|---------------|--------------|
-| Gateway | http://localhost:8080/swagger-ui.html | http://localhost:8080/api-docs |
-| Auth | http://localhost:8081/swagger-ui.html | http://localhost:8081/api-docs |
-| User | http://localhost:8082/swagger-ui.html | http://localhost:8082/api-docs |
-| Catalog | http://localhost:8083/swagger-ui.html | http://localhost:8083/api-docs |
-| Order | http://localhost:8084/swagger-ui.html | http://localhost:8084/api-docs |
-| Payment | http://localhost:8085/swagger-ui.html | http://localhost:8085/api-docs |
-| Inventory | http://localhost:8086/swagger-ui.html | http://localhost:8086/api-docs |
-| Notification | http://localhost:8087/swagger-ui.html | http://localhost:8087/api-docs |
+| Service | Swagger UI URL | Port |
+|---------|---------------|------|
+| Gateway | http://localhost:8080/swagger-ui.html | 8080 |
+| Auth | http://localhost:8081/swagger-ui.html | 8081 |
+| User | http://localhost:8082/swagger-ui.html | 8082 |
+| Market Data | http://localhost:8083/swagger-ui.html | 8083 |
+| Order | http://localhost:8084/swagger-ui.html | 8084 |
+| Matching Engine | http://localhost:8085/swagger-ui.html | 8085 |
+| Portfolio | http://localhost:8086/swagger-ui.html | 8086 |
+| Wallet | http://localhost:8087/swagger-ui.html | 8087 |
+| Risk | http://localhost:8088/swagger-ui.html | 8088 |
+| Notification | http://localhost:8089/swagger-ui.html | 8089 |
 
 #### 🌐 Aggregated Swagger via Gateway (Optional - Advanced)
 
@@ -481,52 +561,83 @@ springdoc:
         url: /user-service/api-docs
       - name: Order Service
         url: /order-service/api-docs
-      - name: Catalog Service
-        url: /catalog-service/api-docs
+      - name: Market Data Service
+        url: /market-data-service/api-docs
+      - name: Portfolio Service
+        url: /portfolio-service/api-docs
 ```
 
 This allows accessing all microservice documentation from: `http://localhost:8080/swagger-ui.html`
 
 ---
 
-## 📅 Phase 3: Kafka Event Integration (Week 4)
+## 📅 Phase 3: Kafka Event Integration (Week 5)
 
 ### Kafka Topics
 
 ```
 📨 Topics:
-├── order-events        (OrderCreated, OrderUpdated, OrderCancelled)
-├── payment-events      (PaymentInitiated, PaymentSuccess, PaymentFailed)
-├── inventory-events    (StockUpdated, StockLow)
-├── notification-events (SendEmail, SendSMS)
-└── user-events         (UserCreated, UserUpdated)
+├── order-events           (OrderCreated, OrderModified, OrderCancelled)
+├── trade-events           (TradeExecuted, TradeSettled)
+├── price-events           (PriceUpdated, MarketOpen, MarketClose)
+├── portfolio-events       (PositionUpdated, PnLCalculated)
+├── wallet-events          (FundsDeposited, FundsWithdrawn, FundsHeld)
+├── risk-events            (MarginCall, PositionLimitBreached)
+├── notification-events    (SendAlert, SendConfirmation)
+└── user-events            (UserCreated, KYCApproved)
 ```
 
 ### Event Flow Architecture
 
 ```
-Order Service                    Kafka                     Consumers
-     │                             │                           │
-     ├── OrderCreated ──────────► order-events ──────────► Inventory Service
-     │                             │                       Payment Service
-     │                             │                       Notification Service
-     │                             │                           │
-     │◄─── PaymentSuccess ◄────── payment-events ◄──────── Payment Service
-     │                             │                           │
-     ├── OrderConfirmed ────────► order-events ──────────► Notification Service
+Order Service                    Kafka                       Consumers
+     │                             │                              │
+     ├── OrderCreated ──────────► order-events ──────────► Matching Engine
+     │                             │                         Risk Service
+     │                             │                              │
+     │                             │                              │
+Matching Engine                    │                              │
+     │                             │                              │
+     ├── TradeExecuted ─────────► trade-events ──────────► Portfolio Service
+     │                             │                         Wallet Service
+     │                             │                         Notification Service
+     │                             │                              │
+Risk Service                       │                              │
+     │                             │                              │
+     ├── MarginCall ────────────► risk-events ───────────► Notification Service
+     │                             │                         Order Service (force close)
 ```
 
 ---
 
-## 📅 Phase 4: Local Testing & Integration (Week 5)
+## 📅 Phase 4: Real-time Features (Week 6)
+
+### WebSocket Implementation
+
+- Real-time price streaming
+- Order book updates
+- Portfolio value updates
+- Trade notifications
+
+### Price Alert System
+
+- User-defined price triggers
+- Push notifications
+- Email alerts
+
+---
+
+## 📅 Phase 5: Testing & Integration (Week 7)
 
 ### Testing Checklist
 
 - [ ] Unit tests for each service
 - [ ] Integration tests with TestContainers
-- [ ] End-to-end flow testing
+- [ ] End-to-end order → trade flow testing
 - [ ] Kafka consumer/producer testing
+- [ ] WebSocket connection testing
 - [ ] Load testing with K6 or JMeter
+- [ ] Matching engine performance testing
 - [ ] Swagger UI verification for all services
 - [ ] API contract testing via OpenAPI specs
 
@@ -534,13 +645,13 @@ Order Service                    Kafka                     Consumers
 
 Add to `docker-compose.yml`:
 - **Prometheus** — metrics collection
-- **Grafana** — dashboards
+- **Grafana** — dashboards (orders/sec, latency, P&L)
 - **Jaeger** — distributed tracing
 - **ELK Stack** — logs (optional)
 
 ---
 
-## 📅 Phase 5: Containerization (Week 6)
+## 📅 Phase 6: Containerization (Week 8)
 
 ### Dockerfile Template
 
@@ -564,18 +675,26 @@ services:
     
   auth-service:
     build: ./services/auth-service
-    depends_on: [mysql, redis]
+    depends_on: [postgres, redis]
     
   order-service:
     build: ./services/order-service
-    depends_on: [mysql, kafka]
+    depends_on: [postgres, kafka]
+    
+  matching-engine:
+    build: ./services/matching-engine
+    depends_on: [kafka, redis]
+    
+  market-data-service:
+    build: ./services/market-data-service
+    depends_on: [redis, kafka]
     
   # ... other services
 ```
 
 ---
 
-## 📅 Phase 6: AWS Deployment (Week 7-8)
+## 📅 Phase 7: AWS Deployment (Week 9-10)
 
 ### Terraform Structure
 
@@ -586,7 +705,8 @@ services:
 │   ├── eks/
 │   ├── rds/
 │   ├── elasticache/
-│   └── msk/          # Managed Kafka
+│   ├── msk/           # Managed Kafka
+│   └── secrets-manager/
 ├── environments/
 │   ├── dev/
 │   └── prod/
@@ -597,7 +717,8 @@ services:
 
 | Local | AWS Equivalent |
 |-------|---------------|
-| MySQL | RDS (MySQL/Aurora) |
+| PostgreSQL | RDS (PostgreSQL/Aurora) |
+| TimescaleDB | TimescaleDB on EC2 |
 | Kafka | MSK (Managed Kafka) |
 | Redis | ElastiCache |
 | Docker | EKS (Kubernetes) |
@@ -612,6 +733,8 @@ services:
 ├── deployments/
 │   ├── gateway-deployment.yml
 │   ├── auth-deployment.yml
+│   ├── order-deployment.yml
+│   ├── matching-engine-deployment.yml
 │   └── ... (each service)
 ├── services/
 ├── ingress/
@@ -625,13 +748,15 @@ services:
 | Week | Phase | Focus | Deliverable |
 |------|-------|-------|-------------|
 | 1 | Phase 1 | Local infra + project setup | Docker Compose running |
-| 2 | Phase 2 | Gateway + Auth + User services + **Swagger** | Basic auth working + API docs |
-| 3 | Phase 2 | Catalog + Inventory + Order services + **Swagger** | Core flow working + API docs |
-| 4 | Phase 3 | Kafka integration | Event-driven flow |
-| 5 | Phase 4 | Payment + Notification + Testing | Complete local system |
-| 6 | Phase 5 | Dockerize all services | All containers running |
-| 7 | Phase 6 | Terraform + AWS setup | Infra provisioned |
-| 8 | Phase 6 | Deploy to EKS + CI/CD | Production ready |
+| 2 | Phase 2 | Gateway + Auth + User services + **Swagger** | Basic auth working |
+| 3 | Phase 2 | Market Data + Wallet + Risk services + **Swagger** | Core services ready |
+| 4 | Phase 2 | Order + Matching Engine + Portfolio + **Swagger** | Trading flow working |
+| 5 | Phase 3 | Kafka integration | Event-driven flow |
+| 6 | Phase 4 | WebSocket + Real-time features | Live price streaming |
+| 7 | Phase 5 | Testing + Notification service | Complete local system |
+| 8 | Phase 6 | Dockerize all services | All containers running |
+| 9 | Phase 7 | Terraform + AWS setup | Infra provisioned |
+| 10 | Phase 7 | Deploy to EKS + CI/CD | Production ready |
 
 ---
 
@@ -639,8 +764,8 @@ services:
 
 ```bash
 # 1. Create project structure
-mkdir order-management-platform
-cd order-management-platform
+mkdir trading-platform
+cd trading-platform
 mkdir -p infrastructure services common deployment
 
 # 2. Start local infrastructure
@@ -653,8 +778,8 @@ docker-compose ps
 # 4. View Kafka UI
 open http://localhost:8090
 
-# 5. Connect to MySQL
-mysql -h localhost -P 3306 -u root -p
+# 5. Connect to PostgreSQL
+psql -h localhost -p 5432 -U postgres
 
 # 6. Access Swagger UI (after services are running)
 open http://localhost:8080/swagger-ui.html  # Gateway (aggregated)
