@@ -1,0 +1,220 @@
+# ========================
+# Environment Files
+# ========================
+.env
+.env.*
+.env.local
+.env.development
+.env.production
+.env.test
+*.env
+!.env.example
+
+# ========================
+# Java / Maven / Gradle
+# ========================
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# ========================
+# IDE - IntelliJ IDEA
+# ========================
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+.idea_modules/
+
+# ========================
+# IDE - Eclipse
+# ========================
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings/
+.springBeans
+.sts4-cache
+bin/
+
+# ========================
+# IDE - VS Code
+# ========================
+.vscode/
+*.code-workspace
+
+# ========================
+# IDE - NetBeans
+# ========================
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+# ========================
+# OS Generated Files
+# ========================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# ========================
+# Logs
+# ========================
+logs/
+*.log
+*.log.*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ========================
+# Docker
+# ========================
+docker-compose.override.yml
+.docker/
+
+# ========================
+# Terraform
+# ========================
+.terraform/
+.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example
+crash.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+terraform.rc
+
+# ========================
+# Kubernetes
+# ========================
+*.kubeconfig
+kubeconfig
+*.pem
+*.key
+
+# ========================
+# Node.js (if any frontend)
+# ========================
+node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json
+yarn.lock
+
+# ========================
+# Secrets & Credentials
+# ========================
+*.pem
+*.key
+*.crt
+*.p12
+*.jks
+*.keystore
+*.truststore
+credentials/
+secrets/
+**/secrets.yml
+**/secrets.yaml
+*.secret
+
+# ========================
+# AWS
+# ========================
+.aws/
+aws-credentials
+*.aws
+
+# ========================
+# Test & Coverage
+# ========================
+/coverage/
+*.lcov
+.nyc_output/
+test-results/
+surefire-reports/
+failsafe-reports/
+
+# ========================
+# Temporary Files
+# ========================
+tmp/
+temp/
+*.tmp
+*.temp
+*.bak
+*.backup
+
+# ========================
+# Spring Boot
+# ========================
+HELP.md
+.mvn/
+mvnw
+mvnw.cmd
+
+# ========================
+# Application Properties (sensitive)
+# ========================
+**/application-local.yml
+**/application-local.yaml
+**/application-local.properties
+**/application-secret.yml
+**/application-secret.yaml
+**/application-prod.yml
+**/application-prod.yaml
+!**/application-local.yml.example
+
+# ========================
+# Kafka / Redis Data
+# ========================
+data/
+kafka-data/
+redis-data/
+zookeeper-data/
+postgres-data/
+mysql-data/
+
+# ========================
+# Reports & Docs (generated)
+# ========================
+site/
+docs/generated/
+api-docs/
+
+# ========================
+# Misc
+# ========================
+*.pid
+*.seed
+*.pid.lock
+.cache/
+.parcel-cache/
+
