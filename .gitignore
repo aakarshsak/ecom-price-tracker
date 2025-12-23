@@ -1,4 +1,16 @@
 # ========================
+# Environment Files
+# ========================
+.env
+.env.*
+.env.local
+.env.development
+.env.production
+.env.test
+*.env
+!.env.example
+
+# ========================
 # Java / Maven / Gradle
 # ========================
 target/
