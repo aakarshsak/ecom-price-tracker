@@ -1,6 +1,5 @@
 package com.sinha.ecom_system.user_service.dto;
 
-import com.sinha.ecom_system.user_service.model.Status;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

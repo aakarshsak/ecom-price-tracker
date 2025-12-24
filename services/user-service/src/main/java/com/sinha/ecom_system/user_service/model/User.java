@@ -27,5 +27,7 @@ public class User {
     private String mobileNumber;
     private String password;
     private LocalDate dob;
+    private UserStatus userStatus;
     private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }

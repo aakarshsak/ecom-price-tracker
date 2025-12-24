@@ -1,5 +1,6 @@
 package com.sinha.ecom_system.user_service.dto;
 
+import com.sinha.ecom_system.user_service.model.UserStatus;
 import lombok.Builder;
 import lombok.Data;
 
@@ -15,5 +16,7 @@ public class UserDTO {
     private String email;
     private String mobileNumber;
     private LocalDate dob;
+    private UserStatus userStatus;
     private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }

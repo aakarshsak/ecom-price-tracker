@@ -8,11 +8,20 @@ spring:
     driver-class-name: org.postgresql.Driver
 
   jpa:
+    show-sql: true
     hibernate:
       ddl-auto: update
     properties:
       hibernate:
+        format_sql: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
+
+
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.springframework.jdbc.core: DEBUG
 
 server:
   port: ${SERVER_PORT}
