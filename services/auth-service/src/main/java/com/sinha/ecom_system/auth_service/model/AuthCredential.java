@@ -1,10 +1,8 @@
 package com.sinha.ecom_system.auth_service.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 
 import java.time.LocalDateTime;
@@ -16,10 +14,13 @@ import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "auth_credentials")
-@Data
 @Builder
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString(exclude = {"userRoles"})
+@EqualsAndHashCode(of = {"id", "userId", "email"})
 public class AuthCredential {
 
     @Id
@@ -27,25 +28,48 @@ public class AuthCredential {
     @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
     @Column(name = "id", updatable = false, nullable = false)
     private UUID id;
-
-    private UUID userId;          // Maps to user_id
+    
+    @Column(name = "email", nullable = false, unique = true, length = 255)
     private String email;
-    private String passwordHash;  // Maps to password_hash
+    
+    @Column(name = "password_hash", nullable = false, length = 255)
+    private String passwordHash;
+    
+    @Column(name = "salt", length = 255)
     private String salt;
 
-    private Boolean isEmailVerified;  // Maps to is_email_verified
-    private Boolean isPhoneVerified;  // Maps to is_phone_verified
-    private Boolean is2faEnabled;     // Maps to is_2fa_enabled
-    private String totpSecret;        // Maps to totp_secret
+    @Column(name = "is_email_verified")
+    private Boolean isEmailVerified;
+    
+    @Column(name = "is_phone_verified")
+    private Boolean isPhoneVerified;
+    
+    @Column(name = "is_2fa_enabled")
+    private Boolean is2faEnabled;
+    
+    @Column(name = "totp_secret", length = 255)
+    private String totpSecret;
 
-    private Integer failedAttempts;   // Maps to failed_attempts
-    private LocalDateTime lockedUntil;    // Maps to locked_until
-    private LocalDateTime lastLogin;      // Maps to last_login
-    private LocalDateTime lastPasswordChange; // Maps to last_password_change
+    @Column(name = "failed_attempts")
+    private Integer failedAttempts;
+    
+    @Column(name = "locked_until")
+    private LocalDateTime lockedUntil;
+    
+    @Column(name = "last_login")
+    private LocalDateTime lastLogin;
+    
+    @Column(name = "last_password_change")
+    private LocalDateTime lastPasswordChange;
 
-    private LocalDateTime createdAt;  // Maps to created_at
-    private LocalDateTime updatedAt;  // Maps to updated_at
-    private UUID createdBy;           // Maps to created_by
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+    
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+    
+    @Column(name = "created_by")
+    private UUID createdBy;
 
     @OneToMany(mappedBy = "authCredential", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
@@ -83,7 +107,7 @@ public class AuthCredential {
      */
     public void addRole(Role role, UUID grantedBy) {
         UserRole userRole = UserRole.builder()
-                .id(new UserRoleId(this.userId, role.getId()))
+                .id(new UserRoleId(this.id, role.getId()))
                 .authCredential(this)
                 .role(role)
                 .grantedAt(LocalDateTime.now())

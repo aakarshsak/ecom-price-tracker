@@ -15,8 +15,8 @@ import java.util.UUID;
 @AllArgsConstructor
 public class UserRoleId implements Serializable {
 
-    @Column(name = "user_id")
-    private UUID userId;
+    @Column(name = "auth_id")
+    private UUID authId;
 
     @Column(name = "role_id")
     private UUID roleId;

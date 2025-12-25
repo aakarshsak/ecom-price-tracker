@@ -13,18 +13,18 @@ import java.util.UUID;
 @Repository
 public interface UserRoleRepository extends JpaRepository<UserRole, UserRoleId> {
     // Find all roles for a user
-    List<UserRole> findByAuthCredential_UserId(UUID userId);
+    List<UserRole> findByAuthCredential_Id(UUID authId);
 
     // Find all active roles for a user
-    @Query("SELECT ur FROM UserRole ur WHERE ur.authCredential.userId = :userId AND ur.isActive = true")
-    List<UserRole> findActiveRolesByUserId(@Param("userId") UUID userId);
+    @Query("SELECT ur FROM UserRole ur WHERE ur.authCredential.id = :authId AND ur.isActive = true")
+    List<UserRole> findActiveRolesByAuthId(@Param("authId") UUID authId);
 
     // Find all users with a specific role
     List<UserRole> findByRole_Name(String roleName);
 
     // Check if user has a specific role
-    boolean existsByAuthCredential_UserIdAndRole_Name(UUID userId, String roleName);
+    boolean existsByAuthCredential_IdAndRole_Name(UUID id, String roleName);
 
     // Delete all roles for a user
-    void deleteByAuthCredential_UserId(UUID userId);
+    void deleteByAuthCredential_Id(UUID id);
 }

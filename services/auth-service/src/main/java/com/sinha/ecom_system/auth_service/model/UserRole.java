@@ -1,28 +1,28 @@
 package com.sinha.ecom_system.auth_service.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
 @Table(name = "user_roles")
-@Data
 @Builder
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString(exclude = {"role", "authCredential"})
+@EqualsAndHashCode(of = {"id"})
 public class UserRole {
 
     @EmbeddedId
     private UserRoleId id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @MapsId("userId")
-    @JoinColumn(name = "user_id", nullable = false)
+    @MapsId("authId")
+    @JoinColumn(name = "auth_id", nullable = false)
     private AuthCredential authCredential;
 
     @ManyToOne(fetch = FetchType.EAGER)

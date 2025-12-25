@@ -8,12 +8,30 @@ spring:
     driver-class-name: org.postgresql.Driver
 
   jpa:
+    hibernate:
+      ddl-auto: validate
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
+        jdbc:
+          time_zone: UTC
+    show-sql: false
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+
+  # Redis Configuration
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      database: 0
 
 server:
-  port: ${SERVER_PORT}
+  port: ${SERVER_PORT:8100}
 
 eureka:
   client:
@@ -21,3 +39,17 @@ eureka:
       defaultZone: ${EUREKA.CLIENT.SERVICE_URL.DEFAULT_ZONE}
   instance:
     instance-id: ${spring.application.name}:${server.port}
+
+# JWT Configuration
+jwt:
+  secret-key: ${JWT_SECRET_KEY:your-secret-key-change-in-production-must-be-at-least-256-bits-long-for-HS256}
+  access-token-expiry: ${JWT_ACCESS_TOKEN_EXPIRY:900000}  # 15 minutes
+  refresh-token-expiry: ${JWT_REFRESH_TOKEN_EXPIRY:604800000}  # 7 days
+  issuer: ${JWT_ISSUER:trading-platform-auth-service}
+
+# Logging
+logging:
+  level:
+    com.sinha.ecom_system.auth_service: DEBUG
+    org.springframework.security: DEBUG
+

@@ -19,6 +19,10 @@ public class AuthResponse {
     private Long expiresIn; // seconds
 
     private UserInfo user;
+    
+    // For 2FA flow
+    private Boolean requires2FA;
+    private String tempToken; // Temporary token for 2FA verification
 
     private LocalDateTime timestamp;
 

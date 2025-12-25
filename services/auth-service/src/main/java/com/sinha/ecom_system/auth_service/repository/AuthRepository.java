@@ -15,8 +15,8 @@ public interface AuthRepository extends JpaRepository<AuthCredential, UUID> {
     // Find by email
     Optional<AuthCredential> findByEmail(String email);
 
-    // Find by userId
-    Optional<AuthCredential> findByUserId(UUID userId);
+    // Find by id
+    Optional<AuthCredential> findById(UUID id);
 
     // Check if email exists
     boolean existsByEmail(String email);
@@ -25,6 +25,6 @@ public interface AuthRepository extends JpaRepository<AuthCredential, UUID> {
     @Query("SELECT ac FROM AuthCredential ac LEFT JOIN FETCH ac.userRoles ur LEFT JOIN FETCH ur.role WHERE ac.email = :email")
     Optional<AuthCredential> findByEmailWithRoles(@Param("email") String email);
 
-    @Query("SELECT ac FROM AuthCredential ac LEFT JOIN FETCH ac.userRoles ur LEFT JOIN FETCH ur.role WHERE ac.userId = :userId")
-    Optional<AuthCredential> findByUserIdWithRoles(@Param("userId") UUID userId);
+    @Query("SELECT ac FROM AuthCredential ac LEFT JOIN FETCH ac.userRoles ur LEFT JOIN FETCH ur.role WHERE ac.id = :id")
+    Optional<AuthCredential> findByUserIdWithRoles(@Param("id") UUID id);
 }

@@ -15,6 +15,7 @@ public class CustomExceptionHandler {
 
     @ExceptionHandler
     public ResponseEntity<ErrorResponse> handleGlobalException(Exception e) {
+        System.out.println("HAndler error: " + e);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ErrorResponse.builder()
                         .errorCode(500)
                         .message("Internal Server error")
