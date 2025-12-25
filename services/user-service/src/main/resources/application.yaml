@@ -13,15 +13,15 @@ spring:
       ddl-auto: update
     properties:
       hibernate:
-        format_sql: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
+#        format-sql: true
 
 
-logging:
-  level:
-    org.hibernate.SQL: DEBUG
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
-    org.springframework.jdbc.core: DEBUG
+#logging:
+#  level:
+#    org.hibernate.SQL: DEBUG
+#    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+#    org.springframework.jdbc.core: DEBUG
 
 server:
   port: ${SERVER_PORT}

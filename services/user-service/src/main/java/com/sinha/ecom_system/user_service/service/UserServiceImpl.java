@@ -100,32 +100,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void updateUserStatus(Long id, UserStatus status) {
-        switch (status) {
-            case ACTIVE -> {
-                makeUserActive(id);
-            }
-            case INACTIVE -> {
-                makeUserInactive(id);
-            }
-            case DISABLED -> {
-                makeUserDisabled(id);
-            }
-        }
-    }
-
-    @Override
-    public void makeUserActive(Long id) {
-        userRepository.updateUserStatus(id, UserStatus.ACTIVE, LocalDateTime.now());
-    }
-
-    @Override
-    public void makeUserInactive(Long id) {
-        userRepository.updateUserStatus(id, UserStatus.INACTIVE, LocalDateTime.now());
-    }
-
-    @Override
-    public void makeUserDisabled(Long id) {
-        userRepository.updateUserStatus(id, UserStatus.DISABLED, LocalDateTime.now());
+        userRepository.updateUserStatus(id, status, LocalDateTime.now());
     }
 }
 

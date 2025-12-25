@@ -4,7 +4,7 @@ services:
     container_name: db_container
     restart: no
     environment:
-      POSTGRES_DB: testdb
+      POSTGRES_DB: auth_db
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
     ports:

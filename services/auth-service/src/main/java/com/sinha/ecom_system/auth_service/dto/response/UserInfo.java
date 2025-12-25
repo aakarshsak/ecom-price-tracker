@@ -1,7 +1,5 @@
-package com.sinha.ecom_system.user_service.model;
+package com.sinha.ecom_system.auth_service.dto.response;
 
-
-import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -9,24 +7,29 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity
-@Table(name = "users")
-public class User {
+public class UserInfo {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    private Long id;
+    private UUID userId;
     private String firstName;
     private String lastName;
     private String email;
     private String mobileNumber;
     private LocalDate dob;
-    private UserStatus userStatus;
+
+    private Boolean isEmailVerified;
+    private Boolean isPhoneVerified;
+    private Boolean is2faEnabled;
+
+    private List<String> roles;
+    private List<String> permissions;
+
     private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private LocalDateTime lastLogin;
 }

@@ -14,10 +14,4 @@ public interface UserService {
     void updateUser(Long id, RegisterUserRequest body) throws Exception;
 
     void updateUserStatus(Long id, UserStatus userStatus);
-
-    void makeUserActive(Long id);
-
-    void makeUserInactive(Long id);
-
-    void makeUserDisabled(Long id);
 }

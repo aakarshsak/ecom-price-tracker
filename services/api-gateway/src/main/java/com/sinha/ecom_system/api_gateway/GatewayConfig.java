@@ -17,6 +17,11 @@ public class GatewayConfig {
                         .filters(f -> f
                                 .rewritePath("/v1/api/user-service/(?<segment>.*)", "/${segment}"))
                         .uri("lb://USER-SERVICE"))
+                .route("auth-service", r -> r
+                        .path("/v1/api/auth-service/**")
+                        .filters(f -> f
+                                .rewritePath("/v1/api/auth-service/(?<segment>.*)", "/${segment}"))
+                .uri("lb://AUTH-SERVICE"))
                 .build();
     }
 }
