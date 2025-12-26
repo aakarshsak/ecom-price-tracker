@@ -1,5 +1,6 @@
 package com.sinha.ecom_system.auth_service.filter;
 
+import com.sinha.ecom_system.auth_service.service.TokenBlacklistService;
 import com.sinha.ecom_system.auth_service.util.JwtUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -23,10 +24,12 @@ import java.util.stream.Collectors;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
+    private final TokenBlacklistService tokenBlacklistService;
 
     @Autowired
-    public JwtAuthenticationFilter(JwtUtil jwtUtil) {
+    public JwtAuthenticationFilter(JwtUtil jwtUtil, TokenBlacklistService tokenBlacklistService) {
         this.jwtUtil = jwtUtil;
+        this.tokenBlacklistService = tokenBlacklistService;
     }
 
     @Override
@@ -40,9 +43,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String token = extractTokenFromRequest(request);
 
             if (token != null && jwtUtil.validateToken(token)) {
-                // Check if it's an access token
+                // Check token type first
                 String tokenType = jwtUtil.getTokenType(token);
                 if ("ACCESS".equals(tokenType)) {
+                    // Check if token is blacklisted
+                    String tokenId = jwtUtil.getTokenId(token);
+                    if (tokenBlacklistService.isTokenBlacklisted(tokenId)) {
+                        log.warn("Attempted to use blacklisted token: {}", tokenId);
+                        // Don't authenticate - let Spring Security handle as unauthorized
+                        filterChain.doFilter(request, response);
+                        return;
+                    }
+                    
                     // Extract user details from token
                     String userId = jwtUtil.getUserIdFromToken(token).toString();
                     String email = jwtUtil.getEmailFromToken(token);

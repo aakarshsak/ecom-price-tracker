@@ -25,6 +25,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 import java.util.Base64;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -38,6 +39,7 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final JwtProperties jwtProperties;
+    private final TokenBlacklistService tokenBlacklistService;
 
     @Autowired
     public AuthServiceImpl(
@@ -46,13 +48,15 @@ public class AuthServiceImpl implements AuthService {
             RefreshTokenRepository refreshTokenRepository,
             PasswordEncoder passwordEncoder,
             JwtUtil jwtUtil,
-            JwtProperties jwtProperties) {
+            JwtProperties jwtProperties,
+            TokenBlacklistService tokenBlacklistService) {
         this.authRepository = authRepository;
         this.roleRepository = roleRepository;
         this.refreshTokenRepository = refreshTokenRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtil = jwtUtil;
         this.jwtProperties = jwtProperties;
+        this.tokenBlacklistService = tokenBlacklistService;
     }
 
     @Override
@@ -224,11 +228,28 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     @Transactional
-    public void logout(UUID userId, String refreshToken) {
-        if (refreshToken != null) {
-            String tokenHash = hashToken(refreshToken);
-            refreshTokenRepository.revokeToken(tokenHash, LocalDateTime.now());
+    public void logout(UUID userId, String accessToken) {
+        // Blacklist the access token to prevent reuse
+        if (accessToken != null) {
+            try {
+                String tokenId = jwtUtil.getTokenId(accessToken);
+                Date expiryDate = jwtUtil.getExpirationDate(accessToken);
+                
+                // Add token to Redis blacklist with TTL = remaining token lifetime
+                tokenBlacklistService.blacklistToken(tokenId, expiryDate);
+                
+                log.info("Access token blacklisted for user: {}", userId);
+            } catch (Exception e) {
+                log.error("Error blacklisting token: {}", e.getMessage());
+                throw new RuntimeException("Failed to logout: " + e.getMessage());
+            }
         }
+        
+        // Optionally revoke all refresh tokens for this user
+        // This forces the user to re-login on all devices
+        refreshTokenRepository.revokeAllUserTokens(userId, LocalDateTime.now());
+        
+        log.info("User {} logged out successfully", userId);
     }
 
     @Override

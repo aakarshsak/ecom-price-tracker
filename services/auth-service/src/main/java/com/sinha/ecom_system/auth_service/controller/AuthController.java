@@ -9,6 +9,7 @@ import com.sinha.ecom_system.auth_service.dto.response.AuthResponse;
 import com.sinha.ecom_system.auth_service.dto.response.MessageResponse;
 import com.sinha.ecom_system.auth_service.dto.response.TokenResponse;
 import com.sinha.ecom_system.auth_service.service.AuthService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +24,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/auth")
+@Slf4j
 public class AuthController {
 
     private final AuthService authService;
@@ -99,17 +101,30 @@ public class AuthController {
     }
 
     /**
-     * Logout user (revoke refresh token)
+     * Logout user (invalidate current access token)
+     * Requires: Authorization: Bearer <access_token> in header
      */
     @PostMapping("/logout")
-    public ResponseEntity<ApiResponse<MessageResponse>> logout(@RequestBody(required = false) RefreshTokenRequest request) {
+    public ResponseEntity<ApiResponse<MessageResponse>> logout(HttpServletRequest request) {
         try {
-            // Get userId from SecurityContext (set by JWT filter)
+            // Extract access token from Authorization header
+            String authHeader = request.getHeader("Authorization");
+            String accessToken = null;
+            
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                accessToken = authHeader.substring(7); // Remove "Bearer " prefix
+            }
+            
+            if (accessToken == null) {
+                throw new RuntimeException("Access token not provided");
+            }
+            
+            // Get userId from SecurityContext (already authenticated by filter)
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             UUID userId = UUID.fromString(authentication.getPrincipal().toString());
             
-            String refreshToken = request != null ? request.getRefreshToken() : null;
-            authService.logout(userId, refreshToken);
+            // Logout (blacklist the access token)
+            authService.logout(userId, accessToken);
             
             return ResponseEntity.ok(ApiResponse.<MessageResponse>builder()
                     .status("success")
@@ -122,7 +137,7 @@ public class AuthController {
                     .timestamp(LocalDateTime.now())
                     .build());
         } catch (Exception e) {
-            System.out.println("Logout error: {}" +  e.getMessage());
+            log.error("Logout error: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.<MessageResponse>builder()
                     .status("error")
                     .message(e.getMessage())
