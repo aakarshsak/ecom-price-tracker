@@ -2,9 +2,9 @@ spring:
   application:
     name: auth-service
   datasource:
-    url: ${SPRING.DATASOURCE.URL}
-    username: ${SPRING.DATASOURCE.USERNAME}
-    password: ${SPRING.DATASOURCE.PASSWORD}
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -31,22 +31,21 @@ spring:
       database: 0
 
 server:
-  port: ${SERVER_PORT:8100}
+  port: ${SERVER_PORT}
 
 eureka:
   client:
     serviceUrl:
-      defaultZone: ${EUREKA.CLIENT.SERVICE_URL.DEFAULT_ZONE}
+      defaultZone: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE}
   instance:
     instance-id: ${spring.application.name}:${server.port}
 
 # JWT Configuration
 jwt:
-  secret-key: ${JWT_SECRET_KEY:your-secret-key-change-in-production-must-be-at-least-256-bits-long-for-HS256}
-  access-token-expiry: ${JWT_ACCESS_TOKEN_EXPIRY:900000}  # 15 minutes
-  refresh-token-expiry: ${JWT_REFRESH_TOKEN_EXPIRY:604800000}  # 7 days
-  issuer: ${JWT_ISSUER:trading-platform-auth-service}
-
+  secret-key: ${JWT_SECRET_KEY}
+  access-token-expiry: ${JWT_ACCESS_TOKEN_EXPIRY}
+  refresh-token-expiry: ${JWT_REFRESH_TOKEN_EXPIRY}
+  issuer: ${JWT_ISSUER}
 # Logging
 logging:
   level:

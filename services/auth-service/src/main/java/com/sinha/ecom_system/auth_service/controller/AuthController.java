@@ -52,7 +52,6 @@ public class AuthController {
                 .data(authResponse)
                 .timestamp(LocalDateTime.now())
                 .build());
-
     }
 
     /**

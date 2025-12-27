@@ -84,8 +84,6 @@ public class AuthServiceImpl implements AuthService {
                 .failedAttempts(0)
                 .build();
 
-        System.out.println("Checking if here");
-
         // Assign default ROLE_USER role
         Role userRole = roleRepository.findByName("ROLE_USER")
                 .orElseThrow(() -> new RuntimeException("Default role not found"));
