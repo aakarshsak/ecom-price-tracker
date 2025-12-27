@@ -22,6 +22,10 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+/**
+ * REST Controller for Authentication endpoints
+ * Handles user registration, login, token refresh, and logout operations
+ */
 @RestController
 @RequestMapping("/auth")
 @Slf4j
@@ -35,7 +39,9 @@ public class AuthController {
     }
 
     /**
-     * Register a new user
+     * Register a new user with default ROLE_USER
+     * @param request Contains email and password
+     * @return AuthResponse with access token, refresh token, and user info
      */
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<AuthResponse>> registerUser(@Valid @RequestBody RegisterRequest request) {
@@ -50,13 +56,17 @@ public class AuthController {
     }
 
     /**
-     * Login user
+     * Authenticate user with email and password
+     * Returns tokens unless 2FA is required
+     * @param request Contains email and password
+     * @return AuthResponse with tokens or 2FA requirement flag
      */
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<AuthResponse>> login(@Valid @RequestBody LoginRequest request) {
         try {
             AuthResponse authResponse = authService.login(request);
             
+            // Check if 2FA verification is needed
             String message = authResponse.getRequires2FA() != null && authResponse.getRequires2FA()
                     ? "2FA verification required"
                     : "Login successful";
@@ -78,7 +88,9 @@ public class AuthController {
     }
 
     /**
-     * Refresh access token
+     * Generate new access token using valid refresh token
+     * @param request Contains refresh token
+     * @return New access token with same refresh token
      */
     @PostMapping("/refresh")
     public ResponseEntity<ApiResponse<TokenResponse>> refreshToken(@Valid @RequestBody RefreshTokenRequest request) {
@@ -101,11 +113,15 @@ public class AuthController {
     }
 
     /**
-     * Logout user (invalidate current access token)
-     * Requires: Authorization: Bearer <access_token> in header
+     * Logout user by blacklisting their access token
+     * Token is added to Redis blacklist and cannot be reused
+     * Also revokes all refresh tokens for this user
+     * 
+     * @param request HTTP request containing Authorization header with Bearer token
+     * @return Success message
      */
     @PostMapping("/logout")
-    public ResponseEntity<ApiResponse<MessageResponse>> logout(HttpServletRequest request) {
+    public ResponseEntity<MessageResponse> logout(HttpServletRequest request) {
         try {
             // Extract access token from Authorization header
             String authHeader = request.getHeader("Authorization");
@@ -119,26 +135,21 @@ public class AuthController {
                 throw new RuntimeException("Access token not provided");
             }
             
-            // Get userId from SecurityContext (already authenticated by filter)
+            // Get userId from SecurityContext (populated by JwtAuthenticationFilter)
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             UUID userId = UUID.fromString(authentication.getPrincipal().toString());
             
-            // Logout (blacklist the access token)
+            // Blacklist access token and revoke refresh tokens
             authService.logout(userId, accessToken);
             
-            return ResponseEntity.ok(ApiResponse.<MessageResponse>builder()
-                    .status("success")
-                    .message("Logout successful")
-                    .data(MessageResponse.builder()
+            return ResponseEntity.ok(MessageResponse.builder()
                             .message("You have been logged out successfully")
                             .status("success")
                             .timestamp(LocalDateTime.now())
-                            .build())
-                    .timestamp(LocalDateTime.now())
-                    .build());
+                            .build());
         } catch (Exception e) {
             log.error("Logout error: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.<MessageResponse>builder()
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(MessageResponse.builder()
                     .status("error")
                     .message(e.getMessage())
                     .timestamp(LocalDateTime.now())
@@ -147,7 +158,10 @@ public class AuthController {
     }
 
     /**
-     * Logout from all devices
+     * Revoke all refresh tokens for the user
+     * Forces re-authentication on all devices
+     * 
+     * @return Success message
      */
     @PostMapping("/logout-all")
     public ResponseEntity<ApiResponse<MessageResponse>> logoutAllDevices() {

@@ -19,6 +19,11 @@ import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * JWT Authentication Filter
+ * Intercepts requests, validates JWT tokens, and sets Spring Security context
+ * Runs once per request before Spring Security's authentication filter
+ */
 @Component
 @Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -32,6 +37,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         this.tokenBlacklistService = tokenBlacklistService;
     }
 
+    /**
+     * Main filter logic - validates token and authenticates user
+     */
     @Override
     protected void doFilterInternal(
             HttpServletRequest request,
@@ -43,45 +51,44 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String token = extractTokenFromRequest(request);
 
             if (token != null && jwtUtil.validateToken(token)) {
-                // Check token type first
+                // Only process ACCESS tokens (not REFRESH tokens)
                 String tokenType = jwtUtil.getTokenType(token);
                 if ("ACCESS".equals(tokenType)) {
-                    // Check if token is blacklisted
+                    // Check if token has been blacklisted (logout)
                     String tokenId = jwtUtil.getTokenId(token);
                     if (tokenBlacklistService.isTokenBlacklisted(tokenId)) {
                         log.warn("Attempted to use blacklisted token: {}", tokenId);
-                        // Don't authenticate - let Spring Security handle as unauthorized
                         filterChain.doFilter(request, response);
                         return;
                     }
                     
-                    // Extract user details from token
+                    // Extract claims from JWT
                     String userId = jwtUtil.getUserIdFromToken(token).toString();
                     String email = jwtUtil.getEmailFromToken(token);
                     List<String> roles = jwtUtil.getRolesFromToken(token);
                     List<String> permissions = jwtUtil.getPermissionsFromToken(token);
 
-                    // Create authorities from roles and permissions
+                    // Convert roles to Spring Security authorities
                     List<SimpleGrantedAuthority> authorities = roles.stream()
                             .map(SimpleGrantedAuthority::new)
                             .collect(Collectors.toList());
 
-                    // Add permissions as authorities
+                    // Add permissions as authorities with PERM_ prefix
                     authorities.addAll(permissions.stream()
                             .map(perm -> new SimpleGrantedAuthority("PERM_" + perm))
                             .collect(Collectors.toList()));
 
-                    // Create authentication token
+                    // Create authentication object for Spring Security
                     UsernamePasswordAuthenticationToken authentication =
                             new UsernamePasswordAuthenticationToken(
-                                    userId,  // Principal (user ID)
-                                    null,    // Credentials (not needed after authentication)
-                                    authorities
+                                    userId,      // Principal (accessible via SecurityContext)
+                                    null,        // Credentials not needed
+                                    authorities  // Roles and permissions
                             );
 
                     authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
-                    // Set authentication in SecurityContext
+                    // Store authentication in SecurityContext for this request
                     SecurityContextHolder.getContext().setAuthentication(authentication);
 
                     log.debug("Set authentication for user: {} with roles: {} and permissions: {}",
@@ -90,8 +97,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             }
         } catch (Exception e) {
             log.error("Cannot set user authentication: {}", e.getMessage());
-            // Don't throw exception, just continue without authentication
-            // Spring Security will handle unauthorized access
+            // Continue without authentication - Spring Security will deny access
         }
 
         filterChain.doFilter(request, response);
@@ -99,25 +105,26 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     /**
      * Extract JWT token from Authorization header
+     * Expected format: "Bearer <token>"
      */
     private String extractTokenFromRequest(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
 
         if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-            return bearerToken.substring(7); // Remove "Bearer " prefix
+            return bearerToken.substring(7);
         }
 
         return null;
     }
 
     /**
-     * Skip filter for public endpoints
+     * Skip JWT validation for public endpoints
      */
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
         
-        // Skip JWT filter for public authentication endpoints
+        // Public endpoints don't require authentication
         return path.startsWith("/auth/register") ||
                path.startsWith("/auth/login") ||
                path.startsWith("/auth/refresh") ||

@@ -9,8 +9,13 @@ import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Service for managing JWT token blacklist using Redis
- * Blacklisted tokens cannot be used for authentication until they expire
+ * Token Blacklist Service using Redis
+ * 
+ * Manages invalidated JWT access tokens to prevent reuse after logout
+ * Tokens are stored in Redis with TTL matching their expiry time
+ * Redis automatically removes tokens when they naturally expire
+ * 
+ * Key format: "token:blacklist:{tokenId}"
  */
 @Service
 @Slf4j

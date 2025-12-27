@@ -29,6 +29,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Implementation of Authentication Service
+ * Handles user registration, login, token management, and role assignment
+ */
 @Service
 @Slf4j
 public class AuthServiceImpl implements AuthService {
@@ -62,15 +66,15 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public AuthResponse registerAuth(RegisterRequest request) {
-        // Check if email already exists
+        // Validate email uniqueness
         if (authRepository.existsByEmail(request.getEmail())) {
             throw new RuntimeException("Email already registered");
         }
 
-        // Hash password
+        // Hash password using BCrypt
         String passwordHash = passwordEncoder.encode(request.getPassword());
 
-        // Create AuthCredential
+        // Create new AuthCredential entity
         AuthCredential authCredential = AuthCredential.builder()
                 .email(request.getEmail().toLowerCase())
                 .passwordHash(passwordHash)
@@ -82,25 +86,25 @@ public class AuthServiceImpl implements AuthService {
 
         System.out.println("Checking if here");
 
-        // Assign default role (ROLE_USER)
+        // Assign default ROLE_USER role
         Role userRole = roleRepository.findByName("ROLE_USER")
                 .orElseThrow(() -> new RuntimeException("Default role not found"));
 
         authCredential.addRole(userRole, null);
 
-        // Save
+        // Persist to database (ID auto-generated)
         authCredential = authRepository.save(authCredential);
 
-        // Generate tokens
+        // Generate JWT tokens
         String accessToken = generateAccessToken(authCredential);
         String refreshToken = generateAndStoreRefreshToken(authCredential, null, null);
 
-        // Build response
+        // Return auth response with tokens and user info
         return AuthResponse.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .tokenType("Bearer")
-                .expiresIn(jwtProperties.getAccessTokenExpiry() / 1000) // Convert to seconds
+                .expiresIn(jwtProperties.getAccessTokenExpiry() / 1000)
                 .user(buildUserInfo(authCredential))
                 .requires2FA(false)
                 .timestamp(LocalDateTime.now())
@@ -110,33 +114,31 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public AuthResponse login(LoginRequest request) {
-        // Find user by email
+        // Fetch user by email with roles eagerly loaded
         AuthCredential authCredential = authRepository.findByEmailWithRoles(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("Invalid email or password"));
 
-        // Check if account is locked
+        // Prevent login if account is locked
         if (authCredential.isAccountLocked()) {
             throw new RuntimeException("Account is locked. Please try again later.");
         }
 
-        // Validate password
+        // Validate password with BCrypt
         if (!passwordEncoder.matches(request.getPassword(), authCredential.getPasswordHash())) {
-            // Increment failed attempts
             authCredential.incrementFailedAttempts();
             
-            // Lock account after 5 failed attempts
+            // Lock account after 5 consecutive failed attempts
             if (authCredential.getFailedAttempts() >= 5) {
-                authCredential.lockAccount(15); // Lock for 15 minutes
+                authCredential.lockAccount(15);
             }
             
             authRepository.save(authCredential);
             throw new RuntimeException("Invalid email or password");
         }
 
-        // Check if 2FA is enabled
+        // If 2FA enabled, return temp token for 2FA verification
         if (Boolean.TRUE.equals(authCredential.getIs2faEnabled())) {
-            // TODO: Implement 2FA flow
-            // For now, just return requires2FA flag
+            // TODO: Implement full 2FA flow with OTP generation
             return AuthResponse.builder()
                     .requires2FA(true)
                     .tempToken("temp-2fa-token")
@@ -148,20 +150,19 @@ public class AuthServiceImpl implements AuthService {
                     .build();
         }
 
-        // Reset failed attempts on successful login
+        // Successful login: reset failed attempts and update last login
         authCredential.resetFailedAttempts();
         authCredential.setLastLogin(LocalDateTime.now());
         authRepository.save(authCredential);
 
-        // Generate tokens
+        // Generate access and refresh tokens
         String accessToken = generateAccessToken(authCredential);
         String refreshToken = generateAndStoreRefreshToken(
                 authCredential,
-                null,
-                null // TODO: Get IP from request
+                null,  // TODO: Extract device info from User-Agent
+                null   // TODO: Extract IP address from request
         );
 
-        // Build response
         return AuthResponse.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
@@ -176,46 +177,46 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public TokenResponse refreshAccessToken(RefreshTokenRequest request) {
-        // Validate refresh token format
+        // Validate JWT signature and structure
         if (!jwtUtil.validateToken(request.getRefreshToken())) {
             throw new RuntimeException("Invalid refresh token");
         }
 
-        // Check token type
+        // Ensure token is a REFRESH token, not ACCESS token
         String tokenType = jwtUtil.getTokenType(request.getRefreshToken());
         if (!"REFRESH".equals(tokenType)) {
             throw new RuntimeException("Invalid token type");
         }
 
-        // Get userId from token
+        // Extract userId from JWT claims
         UUID userId = jwtUtil.getUserIdFromToken(request.getRefreshToken());
 
-        // Hash the refresh token to find in database
+        // Hash token to lookup in database (we don't store raw tokens)
         String tokenHash = hashToken(request.getRefreshToken());
 
-        // Find refresh token in database
+        // Verify token exists in database and is not revoked
         RefreshToken storedToken = refreshTokenRepository.findByTokenHash(tokenHash)
                 .orElseThrow(() -> new RuntimeException("Refresh token not found"));
 
-        // Validate token
+        // Check expiry and revoked status
         if (!storedToken.isValid()) {
             throw new RuntimeException("Refresh token is invalid or expired");
         }
 
-        // Verify userId matches
+        // Verify token belongs to the user in JWT claims (prevent token theft)
         if (!storedToken.getAuthId().equals(userId)) {
             throw new RuntimeException("Token user mismatch");
         }
 
-        // Get user details with roles
+        // Fetch user with roles for new access token
         AuthCredential authCredential = authRepository.findByUserIdWithRoles(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // Generate new access token
+        // Generate new access token with current user roles/permissions
         String newAccessToken = generateAccessToken(authCredential);
 
-        // Optionally, rotate refresh token for security
-        // For now, we'll keep the same refresh token
+        // TODO: Implement refresh token rotation for better security
+        // For now, return same refresh token
         
         return TokenResponse.builder()
                 .accessToken(newAccessToken)
@@ -229,13 +230,13 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public void logout(UUID userId, String accessToken) {
-        // Blacklist the access token to prevent reuse
+        // Add access token to Redis blacklist to prevent reuse
         if (accessToken != null) {
             try {
                 String tokenId = jwtUtil.getTokenId(accessToken);
                 Date expiryDate = jwtUtil.getExpirationDate(accessToken);
                 
-                // Add token to Redis blacklist with TTL = remaining token lifetime
+                // Blacklist token with TTL matching its natural expiry
                 tokenBlacklistService.blacklistToken(tokenId, expiryDate);
                 
                 log.info("Access token blacklisted for user: {}", userId);
@@ -245,8 +246,7 @@ public class AuthServiceImpl implements AuthService {
             }
         }
         
-        // Optionally revoke all refresh tokens for this user
-        // This forces the user to re-login on all devices
+        // Revoke all refresh tokens to force re-login on all devices
         refreshTokenRepository.revokeAllUserTokens(userId, LocalDateTime.now());
         
         log.info("User {} logged out successfully", userId);
@@ -255,11 +255,13 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public void logoutAllDevices(UUID userId) {
+        // Revoke all refresh tokens for this user
         refreshTokenRepository.revokeAllUserTokens(userId, LocalDateTime.now());
     }
 
     @Override
     public boolean hasPermission(UUID userId, String permission) {
+        // Check if user has specific permission through their roles
         AuthCredential authCredential = authRepository.findByUserIdWithRoles(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -269,6 +271,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public void assignRole(UUID userId, String roleName, UUID grantedBy) {
+        // Add role to user's account
         AuthCredential authCredential = authRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -282,6 +285,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public void removeRole(UUID userId, String roleName) {
+        // Remove role from user's account
         AuthCredential authCredential = authRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -292,8 +296,13 @@ public class AuthServiceImpl implements AuthService {
         authRepository.save(authCredential);
     }
 
-    // Helper Methods
+    /**
+     * Helper Methods
+     */
 
+    /**
+     * Generate JWT access token with user's roles and permissions
+     */
     private String generateAccessToken(AuthCredential authCredential) {
         List<String> roles = authCredential.getRoleNames();
         List<String> permissions = authCredential.getAllPermissions().stream().toList();
@@ -306,18 +315,22 @@ public class AuthServiceImpl implements AuthService {
         );
     }
 
+    /**
+     * Generate refresh token, hash it, and store in database
+     * Raw token returned to client, hash stored in DB for security
+     */
     private String generateAndStoreRefreshToken(AuthCredential authCredential, String deviceInfo, String ipAddress) {
-        // Generate refresh token
+        // Generate JWT refresh token
         String refreshToken = jwtUtil.generateRefreshToken(authCredential.getId());
 
-        // Hash the token for storage
+        // Hash token before storing (never store raw tokens)
         String tokenHash = hashToken(refreshToken);
 
-        // Calculate expiry date
+        // Calculate expiry timestamp
         LocalDateTime expiresAt = LocalDateTime.now()
                 .plusSeconds(jwtProperties.getRefreshTokenExpiry() / 1000);
 
-        // Store in database
+        // Create and persist refresh token record
         RefreshToken storedToken = RefreshToken.builder()
                 .authId(authCredential.getId())
                 .tokenHash(tokenHash)
@@ -332,6 +345,9 @@ public class AuthServiceImpl implements AuthService {
         return refreshToken;
     }
 
+    /**
+     * Hash token using SHA-256 for secure storage
+     */
     private String hashToken(String token) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
@@ -342,6 +358,9 @@ public class AuthServiceImpl implements AuthService {
         }
     }
 
+    /**
+     * Build UserInfo DTO from AuthCredential entity
+     */
     private UserInfo buildUserInfo(AuthCredential authCredential) {
         return UserInfo.builder()
                 .userId(authCredential.getId())

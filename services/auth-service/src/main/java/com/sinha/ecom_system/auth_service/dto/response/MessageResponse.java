@@ -15,4 +15,5 @@ public class MessageResponse {
     private String status;
     private String message;
     private LocalDateTime timestamp;
+    private String requestId;
 }

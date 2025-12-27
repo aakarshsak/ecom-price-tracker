@@ -14,6 +14,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+/**
+ * JWT Utility Class
+ * 
+ * Handles all JWT operations:
+ * - Token generation (ACCESS and REFRESH)
+ * - Token parsing and validation
+ * - Claims extraction
+ * 
+ * Uses HMAC-SHA256 algorithm for signing
+ */
 @Component
 @Slf4j
 public class JwtUtil {
@@ -24,12 +34,19 @@ public class JwtUtil {
     @Autowired
     public JwtUtil(JwtProperties jwtProperties) {
         this.jwtProperties = jwtProperties;
-        // Create a secure key from the secret
+        // Generate secure key from secret string
         this.secretKey = Keys.hmacShaKeyFor(jwtProperties.getSecretKey().getBytes(StandardCharsets.UTF_8));
     }
 
     /**
-     * Generate Access Token
+     * Generate ACCESS token with user details, roles, and permissions
+     * Used for API authentication
+     * 
+     * @param userId User's unique identifier
+     * @param email User's email
+     * @param roles List of role names (e.g., "ROLE_USER", "ROLE_ADMIN")
+     * @param permissions List of permission names
+     * @return Signed JWT token string
      */
     public String generateAccessToken(UUID userId, String email, List<String> roles, List<String> permissions) {
         Date now = new Date();
@@ -44,13 +61,18 @@ public class JwtUtil {
                 .issuer(jwtProperties.getIssuer())
                 .issuedAt(now)
                 .expiration(expiryDate)
-                .id(UUID.randomUUID().toString()) // jti - JWT ID for token revocation
+                .id(UUID.randomUUID().toString()) // jti - used for blacklisting
                 .signWith(secretKey, Jwts.SIG.HS256)
                 .compact();
     }
 
     /**
-     * Generate Refresh Token
+     * Generate REFRESH token
+     * Used only to obtain new access tokens
+     * Contains minimal claims for security
+     * 
+     * @param userId User's unique identifier
+     * @return Signed JWT token string
      */
     public String generateRefreshToken(UUID userId) {
         Date now = new Date();
@@ -68,7 +90,12 @@ public class JwtUtil {
     }
 
     /**
-     * Parse and validate token
+     * Parse and validate JWT token
+     * Verifies signature and expiration
+     * 
+     * @param token JWT token string
+     * @return Claims object containing token data
+     * @throws JwtException if token is invalid
      */
     public Claims parseToken(String token) {
         try {
@@ -84,7 +111,7 @@ public class JwtUtil {
     }
 
     /**
-     * Extract user ID from token
+     * Extract user ID from token subject claim
      */
     public UUID getUserIdFromToken(String token) {
         Claims claims = parseToken(token);
@@ -92,7 +119,7 @@ public class JwtUtil {
     }
 
     /**
-     * Extract email from token
+     * Extract email from custom claim
      */
     public String getEmailFromToken(String token) {
         Claims claims = parseToken(token);
@@ -100,7 +127,7 @@ public class JwtUtil {
     }
 
     /**
-     * Extract roles from token
+     * Extract roles list from custom claim
      */
     @SuppressWarnings("unchecked")
     public List<String> getRolesFromToken(String token) {
@@ -109,7 +136,7 @@ public class JwtUtil {
     }
 
     /**
-     * Extract permissions from token
+     * Extract permissions list from custom claim
      */
     @SuppressWarnings("unchecked")
     public List<String> getPermissionsFromToken(String token) {
@@ -118,7 +145,8 @@ public class JwtUtil {
     }
 
     /**
-     * Get token ID (jti) for blacklisting
+     * Get JWT ID (jti claim)
+     * Used for token blacklisting on logout
      */
     public String getTokenId(String token) {
         Claims claims = parseToken(token);
@@ -126,7 +154,8 @@ public class JwtUtil {
     }
 
     /**
-     * Get token type (ACCESS or REFRESH)
+     * Get token type from custom claim
+     * Returns "ACCESS" or "REFRESH"
      */
     public String getTokenType(String token) {
         Claims claims = parseToken(token);
@@ -146,7 +175,8 @@ public class JwtUtil {
     }
 
     /**
-     * Validate token
+     * Validate token signature and expiry
+     * Returns false for any invalid token (malformed, expired, etc.)
      */
     public boolean validateToken(String token) {
         try {
@@ -167,7 +197,7 @@ public class JwtUtil {
     }
 
     /**
-     * Get expiry time from token
+     * Extract expiration date from token
      */
     public Date getExpirationDate(String token) {
         Claims claims = parseToken(token);
@@ -175,7 +205,7 @@ public class JwtUtil {
     }
 
     /**
-     * Get issued at time from token
+     * Extract issued-at date from token
      */
     public Date getIssuedAtDate(String token) {
         Claims claims = parseToken(token);
@@ -183,7 +213,7 @@ public class JwtUtil {
     }
 
     /**
-     * Extract all claims as Map
+     * Get all claims as a Map
      */
     public Map<String, Object> getAllClaims(String token) {
         return parseToken(token);

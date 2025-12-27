@@ -14,6 +14,15 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+/**
+ * Spring Security Configuration
+ * 
+ * Configures JWT-based stateless authentication
+ * - Disables CSRF (not needed for stateless APIs)
+ * - Defines public vs protected endpoints
+ * - Uses JWT filter for authentication
+ * - No server-side sessions
+ */
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true)
@@ -26,15 +35,18 @@ public class SecurityConfig {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
     }
 
+    /**
+     * Configure security filter chain
+     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            // Disable CSRF (for stateless JWT-based API)
+            // CSRF disabled for stateless JWT API
             .csrf(AbstractHttpConfigurer::disable)
             
-            // Configure endpoint authorization
+            // Define endpoint access rules
             .authorizeHttpRequests(authorize -> authorize
-                // Public endpoints (no authentication required)
+                // Public endpoints - no token required
                 .requestMatchers("/auth/register").permitAll()
                 .requestMatchers("/auth/login").permitAll()
                 .requestMatchers("/auth/refresh").permitAll()
@@ -42,35 +54,39 @@ public class SecurityConfig {
                 .requestMatchers("/auth/reset-password").permitAll()
                 .requestMatchers("/auth/verify-email").permitAll()
 
-                // Protected auth endpoints (require authentication)
+                // Protected endpoints - require valid JWT
                 .requestMatchers("/auth/logout").authenticated()
                 .requestMatchers("/auth/logout-all").authenticated()
                 .requestMatchers("/auth/change-password").authenticated()
                 .requestMatchers("/auth/profile").authenticated()
                 .requestMatchers("/auth/enable-2fa").authenticated()
 
-                // Health check
+                // Monitoring endpoints
                 .requestMatchers("/actuator/health").permitAll()
                 .requestMatchers("/error").permitAll()
 
-                // Everything else requires authentication
+                // All other endpoints require authentication
                 .anyRequest().authenticated()
             )
             
-            // Stateless session (JWT-based, no server-side sessions)
+            // Stateless session - no HttpSession created
             .sessionManagement(session -> 
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
             
-            // Add JWT authentication filter before Spring Security's default filter
+            // Add custom JWT filter before default authentication filter
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
+    /**
+     * Password encoder bean using BCrypt
+     * Strength 12 = 2^12 hashing iterations
+     */
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(12);  // Strength 12 for password hashing
+        return new BCryptPasswordEncoder(12);
     }
 }
 
