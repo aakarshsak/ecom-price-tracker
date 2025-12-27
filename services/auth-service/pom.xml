@@ -195,6 +195,12 @@
 			<version>0.12.3</version>
 			<scope>runtime</scope>
 		</dependency>
+
+		<!--		Feign : Declarative REST Client-->
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-openfeign</artifactId>
+		</dependency>
 	</dependencies>
 	<dependencyManagement>
 		<dependencies>

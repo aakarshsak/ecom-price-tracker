@@ -9,46 +9,31 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 /**
- * Data Transfer Object for User entity
- * Used to expose user data to API consumers
+ * Request DTO for user registration
  */
 @Data
 @Builder
-public class UserDTO {
-    // Identifiers
-    private UUID id;
-    
+public class UserInfoResponse {
+
     // Basic Information
+    private UUID userId;
     private String firstName;
     private String lastName;
     private String email;
     private String mobileNumber;
-    
-    // Personal Information
     private LocalDate dob;
     private Gender gender;
     private String nationality;
-    
-    // Status Fields
     private UserStatus userStatus;
     private AccountType accountType;
-    
-    // KYC Information
     private KycStatus kycStatus;
     private LocalDateTime kycVerifiedAt;
-    
-    // Trading Information
+    private UUID kycVerifiedBy;
     private TradingStatus tradingStatus;
     private RiskProfile riskProfile;
-    
-    // Metadata
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private LocalDateTime lastActiveAt;
-    
-    // Computed fields
-    private Boolean isActive;
-    private Boolean isKycVerified;
-    private Boolean canTrade;
+    private LocalDateTime deletedAt;  // Soft delete timestamp
 }
 

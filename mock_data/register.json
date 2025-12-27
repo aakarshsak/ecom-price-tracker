@@ -1,0 +1,163 @@
+[
+  {
+    "firstName": "John",
+    "lastName": "Doe",
+    "email": "john.doe@example.com",
+    "password": "Password@123",
+    "mobileNumber": "+15550123",
+    "dob": "1990-05-15"
+  },
+  {
+    "firstName": "Sarah",
+    "lastName": "Johnson",
+    "email": "sarah.johnson@example.com",
+    "password": "SecurePass@456",
+    "mobileNumber": "+442079460958",
+    "dob": "1985-11-22"
+  },
+  {
+    "firstName": "Priya",
+    "lastName": "Sharma",
+    "email": "priya.sharma@example.com",
+    "password": "India@2024Pass",
+    "mobileNumber": "+919876543210",
+    "dob": "1992-03-18"
+  },
+  {
+    "firstName": "Hans",
+    "lastName": "Müller",
+    "email": "hans.muller@example.com",
+    "password": "German@Pass99",
+    "mobileNumber": "+493012345678",
+    "dob": "1987-07-25"
+  },
+  {
+    "firstName": "Hiroshi",
+    "lastName": "Tanaka",
+    "email": "hiroshi.tanaka@example.com",
+    "password": "Tokyo@2024Secure",
+    "mobileNumber": "+81312345678",
+    "dob": "1993-09-10"
+  },
+  {
+    "firstName": "Maria",
+    "lastName": "Garcia",
+    "email": "maria.garcia@example.com",
+    "password": "Madrid@Pass123",
+    "mobileNumber": "+34911234567",
+    "dob": "1989-12-08"
+  },
+  {
+    "firstName": "Alex",
+    "lastName": "Smith",
+    "email": "alex.smith@example.com",
+    "password": "Canada@Secure99",
+    "mobileNumber": "+14165559876",
+    "dob": "1995-08-30"
+  },
+  {
+    "firstName": "Emma",
+    "lastName": "Wilson",
+    "email": "emma.wilson@example.com",
+    "password": "Sydney@Pass2024",
+    "mobileNumber": "+61298765432",
+    "dob": "1991-04-17"
+  },
+  {
+    "firstName": "Mohammed",
+    "lastName": "Al-Rashid",
+    "email": "mohammed.alrashid@example.com",
+    "password": "Dubai@Secure123",
+    "mobileNumber": "+97141234567",
+    "dob": "1988-06-05"
+  },
+  {
+    "firstName": "Sophie",
+    "lastName": "Dubois",
+    "email": "sophie.dubois@example.com",
+    "password": "Paris@2024Pass",
+    "mobileNumber": "+33142868200",
+    "dob": "1994-02-14"
+  },
+  {
+    "firstName": "Chen",
+    "lastName": "Wei",
+    "email": "chen.wei@example.com",
+    "password": "Beijing@Pass789",
+    "mobileNumber": "+861012345678",
+    "dob": "1990-11-28"
+  },
+  {
+    "firstName": "Isabella",
+    "lastName": "Rossi",
+    "email": "isabella.rossi@example.com",
+    "password": "Rome@Secure456",
+    "mobileNumber": "+390612345678",
+    "dob": "1986-09-20"
+  },
+  {
+    "firstName": "Raj",
+    "lastName": "Patel",
+    "email": "raj.patel@example.com",
+    "password": "Mumbai@Pass321",
+    "mobileNumber": "+912298765432",
+    "dob": "1992-07-12"
+  },
+  {
+    "firstName": "Taylor",
+    "lastName": "Anderson",
+    "email": "taylor.anderson@example.com",
+    "password": "Secure@Taylor99",
+    "mobileNumber": "+15558765",
+    "dob": "1988-12-05"
+  },
+  {
+    "firstName": "Lars",
+    "lastName": "Johansson",
+    "email": "lars.johansson@example.com",
+    "password": "Stockholm@Pass1",
+    "mobileNumber": "+4681234567",
+    "dob": "1991-03-22"
+  },
+  {
+    "firstName": "Olivia",
+    "lastName": "Brown",
+    "email": "olivia.brown@example.com",
+    "password": "Vancouver@Sec99",
+    "mobileNumber": "+16045551234",
+    "dob": "1993-10-09"
+  },
+  {
+    "firstName": "Miguel",
+    "lastName": "Santos",
+    "email": "miguel.santos@example.com",
+    "password": "Brazil@Pass2024",
+    "mobileNumber": "+5511987654321",
+    "dob": "1989-05-16"
+  },
+  {
+    "firstName": "Yuki",
+    "lastName": "Nakamura",
+    "email": "yuki.nakamura@example.com",
+    "password": "Osaka@Secure456",
+    "mobileNumber": "+819012345678",
+    "dob": "1996-01-30"
+  },
+  {
+    "firstName": "David",
+    "lastName": "Kim",
+    "email": "david.kim@example.com",
+    "password": "Seoul@Pass2024",
+    "mobileNumber": "+82212345678",
+    "dob": "1990-08-14"
+  },
+  {
+    "firstName": "Fatima",
+    "lastName": "Hassan",
+    "email": "fatima.hassan@example.com",
+    "password": "Cairo@Secure789",
+    "mobileNumber": "+20212345678",
+    "dob": "1994-11-11"
+  }
+]
+

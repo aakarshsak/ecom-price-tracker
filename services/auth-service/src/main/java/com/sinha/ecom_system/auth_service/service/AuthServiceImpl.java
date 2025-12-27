@@ -4,21 +4,27 @@ import com.sinha.ecom_system.auth_service.config.JwtProperties;
 import com.sinha.ecom_system.auth_service.dto.request.LoginRequest;
 import com.sinha.ecom_system.auth_service.dto.request.RefreshTokenRequest;
 import com.sinha.ecom_system.auth_service.dto.request.RegisterRequest;
+import com.sinha.ecom_system.auth_service.dto.response.ApiResponse;
 import com.sinha.ecom_system.auth_service.dto.response.AuthResponse;
 import com.sinha.ecom_system.auth_service.dto.response.TokenResponse;
 import com.sinha.ecom_system.auth_service.dto.response.UserInfo;
+import com.sinha.ecom_system.auth_service.dto.user.UserInfoRequest;
+import com.sinha.ecom_system.auth_service.dto.user.UserInfoResponse;
 import com.sinha.ecom_system.auth_service.model.AuthCredential;
 import com.sinha.ecom_system.auth_service.model.RefreshToken;
 import com.sinha.ecom_system.auth_service.model.Role;
+import com.sinha.ecom_system.auth_service.proxy.UserProxy;
 import com.sinha.ecom_system.auth_service.repository.AuthRepository;
 import com.sinha.ecom_system.auth_service.repository.RefreshTokenRepository;
 import com.sinha.ecom_system.auth_service.repository.RoleRepository;
 import com.sinha.ecom_system.auth_service.util.JwtUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -44,6 +50,7 @@ public class AuthServiceImpl implements AuthService {
     private final JwtUtil jwtUtil;
     private final JwtProperties jwtProperties;
     private final TokenBlacklistService tokenBlacklistService;
+    private final UserProxy proxy;
 
     @Autowired
     public AuthServiceImpl(
@@ -53,7 +60,8 @@ public class AuthServiceImpl implements AuthService {
             PasswordEncoder passwordEncoder,
             JwtUtil jwtUtil,
             JwtProperties jwtProperties,
-            TokenBlacklistService tokenBlacklistService) {
+            TokenBlacklistService tokenBlacklistService,
+            UserProxy proxy) {
         this.authRepository = authRepository;
         this.roleRepository = roleRepository;
         this.refreshTokenRepository = refreshTokenRepository;
@@ -61,6 +69,7 @@ public class AuthServiceImpl implements AuthService {
         this.jwtUtil = jwtUtil;
         this.jwtProperties = jwtProperties;
         this.tokenBlacklistService = tokenBlacklistService;
+        this.proxy = proxy;
     }
 
     @Override
@@ -84,11 +93,22 @@ public class AuthServiceImpl implements AuthService {
                 .failedAttempts(0)
                 .build();
 
+        ResponseEntity<ApiResponse<UserInfoResponse>> response = proxy.addUser(UserInfoRequest.builder()
+                        .firstName(request.getFirstName())
+                        .lastName(request.getLastName())
+                        .mobileNumber(request.getMobileNumber())
+                        .dob(request.getDob())
+                        .email(authCredential.getEmail())
+                        .build());
+
+        UUID userId = response.getBody().getData().getUserId();
+
         // Assign default ROLE_USER role
         Role userRole = roleRepository.findByName("ROLE_USER")
                 .orElseThrow(() -> new RuntimeException("Default role not found"));
 
         authCredential.addRole(userRole, null);
+        authCredential.setUserId(userId);
 
         // Persist to database (ID auto-generated)
         authCredential = authRepository.save(authCredential);
@@ -103,7 +123,7 @@ public class AuthServiceImpl implements AuthService {
                 .refreshToken(refreshToken)
                 .tokenType("Bearer")
                 .expiresIn(jwtProperties.getAccessTokenExpiry() / 1000)
-                .user(buildUserInfo(authCredential))
+                .user(buildUserInfo(authCredential, userId))
                 .requires2FA(false)
                 .timestamp(LocalDateTime.now())
                 .build();
@@ -142,7 +162,6 @@ public class AuthServiceImpl implements AuthService {
                     .tempToken("temp-2fa-token")
                     .user(UserInfo.builder()
                             .email(authCredential.getEmail())
-                            .is2faEnabled(true)
                             .build())
                     .timestamp(LocalDateTime.now())
                     .build();
@@ -161,12 +180,15 @@ public class AuthServiceImpl implements AuthService {
                 null   // TODO: Extract IP address from request
         );
 
+        ResponseEntity<ApiResponse<UserInfoResponse>> response = proxy.getUser(authCredential.getUserId());
+        UUID userId = response.getBody().getData().getUserId();
+
         return AuthResponse.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .tokenType("Bearer")
                 .expiresIn(jwtProperties.getAccessTokenExpiry() / 1000)
-                .user(buildUserInfo(authCredential))
+                .user(buildUserInfo(authCredential, userId))
                 .requires2FA(false)
                 .timestamp(LocalDateTime.now())
                 .build();
@@ -359,14 +381,14 @@ public class AuthServiceImpl implements AuthService {
     /**
      * Build UserInfo DTO from AuthCredential entity
      */
-    private UserInfo buildUserInfo(AuthCredential authCredential) {
+    private UserInfo buildUserInfo(AuthCredential authCredential, UUID userId) {
         return UserInfo.builder()
-                .userId(authCredential.getId())
+                .userId(userId)
                 .email(authCredential.getEmail())
                 .roles(authCredential.getRoleNames())
                 .permissions(authCredential.getAllPermissions().stream().toList())
-                .isEmailVerified(authCredential.getIsEmailVerified())
                 .isPhoneVerified(authCredential.getIsPhoneVerified())
+                .isEmailVerified(authCredential.getIsEmailVerified())
                 .is2faEnabled(authCredential.getIs2faEnabled())
                 .createdAt(authCredential.getCreatedAt())
                 .lastLogin(authCredential.getLastLogin())

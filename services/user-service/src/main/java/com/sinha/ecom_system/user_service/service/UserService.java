@@ -1,17 +1,18 @@
 package com.sinha.ecom_system.user_service.service;
 
-import com.sinha.ecom_system.user_service.dto.RegisterUserRequest;
-import com.sinha.ecom_system.user_service.dto.UserDTO;
-import com.sinha.ecom_system.user_service.model.User;
+import com.sinha.ecom_system.user_service.dto.UserInfoRequest;
+import com.sinha.ecom_system.user_service.dto.UserInfoResponse;
 import com.sinha.ecom_system.user_service.model.UserStatus;
+
+import java.util.UUID;
 
 public interface UserService {
 
-    void addUser(RegisterUserRequest user);
+    UserInfoResponse addUser(UserInfoRequest user);
 
-    UserDTO getUser(Long id) throws Exception;
+    UserInfoResponse getUser(UUID id) throws Exception;
 
-    void updateUser(Long id, RegisterUserRequest body) throws Exception;
+    UserInfoResponse updateUser(UUID id, UserInfoRequest body) throws Exception;
 
-    void updateUserStatus(Long id, UserStatus userStatus);
+    void updateUserStatus(UUID id, UserStatus userStatus);
 }

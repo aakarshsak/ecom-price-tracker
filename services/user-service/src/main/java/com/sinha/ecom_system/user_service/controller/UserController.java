@@ -1,9 +1,7 @@
 package com.sinha.ecom_system.user_service.controller;
 
 import com.sinha.ecom_system.user_service.Constants;
-import com.sinha.ecom_system.user_service.dto.BasicResponse;
-import com.sinha.ecom_system.user_service.dto.RegisterUserRequest;
-import com.sinha.ecom_system.user_service.dto.UserDTO;
+import com.sinha.ecom_system.user_service.dto.*;
 import com.sinha.ecom_system.user_service.model.UserStatus;
 import com.sinha.ecom_system.user_service.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/users")
@@ -25,35 +24,42 @@ public class UserController {
     }
 
     @PostMapping("")
-    public ResponseEntity<BasicResponse> addUser(@RequestBody RegisterUserRequest body) {
-        userService.addUser(body);
+    public ResponseEntity<ApiResponse<UserInfoResponse>> addUser(@RequestBody UserInfoRequest body) {
+        UserInfoResponse userInfoResposne = userService.addUser(body);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(BasicResponse.builder()
+                .body(ApiResponse.<UserInfoResponse>builder()
                         .status(Constants.SUCCESS)
                         .message("User addition successful.")
+                        .data(userInfoResposne)
                         .timestamp(LocalDateTime.now())
                         .build());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<UserDTO> getUser(@PathVariable Long id) throws Exception {
-        return ResponseEntity.status(HttpStatus.OK).body(userService.getUser(id));
+    public ResponseEntity<ApiResponse<UserInfoResponse>> getUser(@PathVariable UUID id) throws Exception {
+        UserInfoResponse userInfoResponse = userService.getUser(id);
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.<UserInfoResponse>builder()
+                .status(Constants.SUCCESS)
+                .message("User addition successful.")
+                .data(userInfoResponse)
+                .timestamp(LocalDateTime.now())
+                .build());
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<BasicResponse> updateUser(@PathVariable Long id, @RequestBody RegisterUserRequest body) throws Exception{
-        userService.updateUser(id, body);
+    public ResponseEntity<ApiResponse<UserInfoResponse>> updateUser(@PathVariable UUID id, @RequestBody UserInfoRequest body) throws Exception{
+        UserInfoResponse userInfoResponse = userService.updateUser(id, body);
 
-        return ResponseEntity.status(HttpStatus.ACCEPTED).
-                body(BasicResponse.builder()
-                        .status(Constants.SUCCESS)
-                        .message("Successfully updated the user")
-                        .timestamp(LocalDateTime.now())
-                        .build());
+        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.<UserInfoResponse>builder()
+                .status(Constants.SUCCESS)
+                .message("Updated User Successfully.")
+                .data(userInfoResponse)
+                .timestamp(LocalDateTime.now())
+                .build());
     }
 
     @PatchMapping("/{id}/update-status")
-    public ResponseEntity<BasicResponse> makeUserActive(@PathVariable Long id, @RequestParam(defaultValue = "ACTIVE") UserStatus status) {
+    public ResponseEntity<BasicResponse> makeUserActive(@PathVariable UUID id, @RequestParam(defaultValue = "ACTIVE") UserStatus status) {
         userService.updateUserStatus(id, status);
         return ResponseEntity.status(HttpStatus.NO_CONTENT)
                 .body(BasicResponse.builder().build());

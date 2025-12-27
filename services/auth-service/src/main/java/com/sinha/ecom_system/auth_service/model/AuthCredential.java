@@ -96,6 +96,9 @@ public class AuthCredential {
     @Builder.Default
     private Set<UserRole> userRoles = new HashSet<>();
 
+    @Column(name = "user_id", nullable = false)
+    private UUID userId;  // Link to User entity
+
     /**
      * JPA callback - Set defaults on entity creation
      */

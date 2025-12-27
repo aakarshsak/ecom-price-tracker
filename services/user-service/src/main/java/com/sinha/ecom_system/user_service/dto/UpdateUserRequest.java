@@ -1,6 +1,5 @@
 package com.sinha.ecom_system.user_service.dto;
 
-import com.sinha.ecom_system.user_service.model.AccountType;
 import com.sinha.ecom_system.user_service.model.Gender;
 import com.sinha.ecom_system.user_service.model.RiskProfile;
 import lombok.Data;
@@ -8,14 +7,11 @@ import lombok.Data;
 import java.time.LocalDate;
 
 /**
- * Request DTO for user registration
+ * Request DTO for updating user profile
+ * Only includes fields that users can update themselves
  */
 @Data
-public class RegisterUserRequest {
-    // Authentication fields (forwarded to auth-service)
-    private String email;
-    private String password;
-    
+public class UpdateUserRequest {
     // Basic Information
     private String firstName;
     private String lastName;
@@ -26,8 +22,7 @@ public class RegisterUserRequest {
     private Gender gender;
     private String nationality;
     
-    // Account Configuration
-    private AccountType accountType;  // Optional, defaults to RETAIL
-    private RiskProfile riskProfile;  // Optional
+    // Trading Preferences
+    private RiskProfile riskProfile;
 }
 

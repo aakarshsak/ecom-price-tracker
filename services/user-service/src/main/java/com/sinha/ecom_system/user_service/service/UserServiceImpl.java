@@ -1,7 +1,8 @@
 package com.sinha.ecom_system.user_service.service;
 
-import com.sinha.ecom_system.user_service.dto.RegisterUserRequest;
-import com.sinha.ecom_system.user_service.dto.UserDTO;
+import com.sinha.ecom_system.user_service.dto.UserInfoRequest;
+import com.sinha.ecom_system.user_service.dto.UserInfoResponse;
+import com.sinha.ecom_system.user_service.model.RiskProfile;
 import com.sinha.ecom_system.user_service.model.User;
 import com.sinha.ecom_system.user_service.model.UserStatus;
 import com.sinha.ecom_system.user_service.repository.UserRepository;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -22,43 +24,85 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void addUser(RegisterUserRequest user) {
+    public UserInfoResponse addUser(UserInfoRequest request) {
+
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new RuntimeException("Email already registered");
+        }
+
+        // Create new User entity
         User userModel = User.builder()
-                .firstName(user.getFirstName())
-                .lastName(user.getLastName())
-                .email(user.getEmail())
-                .mobileNumber(user.getMobileNumber())
-                .dob(user.getDob())
-                .userStatus(UserStatus.ACTIVE)
+                .firstName(request.getFirstName())
+                .lastName(request.getLastName())
+                .email(request.getEmail())
+                .mobileNumber(request.getMobileNumber())
+                .dob(request.getDob())
+                .gender(request.getGender())
+                .nationality(request.getNationality())
+                .riskProfile(RiskProfile.CONSERVATIVE)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .build();
 
-        userRepository.save(userModel);
-    }
+        // Persist to database (ID auto-generated)
+        userModel = userRepository.save(userModel);
 
-
-    @Override
-    public UserDTO getUser(Long id) throws Exception {
-        Optional<User> optionalUser = userRepository.getUserById(id);
-
-        User val = optionalUser.orElseThrow(() -> new Exception("User not found"));
-
-        return UserDTO.builder()
-                .firstName(val.getFirstName())
-                .lastName(val.getLastName())
-                .id(val.getId())
-                .mobileNumber(val.getMobileNumber())
-                .dob(val.getDob())
-                .userStatus(val.getUserStatus())
-                .createdAt(val.getCreatedAt())
-                .updatedAt(val.getUpdatedAt())
-                .email(val.getEmail())
+        // Return auth response with tokens and user info
+        return UserInfoResponse.builder()
+                .userId(userModel.getId())
+                .firstName(userModel.getFirstName())
+                .lastName(userModel.getLastName())
+                .email(userModel.getEmail())
+                .mobileNumber(userModel.getMobileNumber())
+                .dob(userModel.getDob())
+                .gender(userModel.getGender())
+                .nationality(userModel.getNationality())
+                .userStatus(userModel.getUserStatus())
+                .accountType(userModel.getAccountType())
+                .kycStatus(userModel.getKycStatus())
+                .kycVerifiedAt(userModel.getKycVerifiedAt())
+                .kycVerifiedBy(userModel.getKycVerifiedBy())
+                .tradingStatus(userModel.getTradingStatus())
+                .riskProfile(userModel.getRiskProfile())
+                .createdAt(userModel.getCreatedAt())
+                .updatedAt(userModel.getUpdatedAt())
+                .lastActiveAt(userModel.getLastActiveAt())
+                .deletedAt(userModel.getDeletedAt())
                 .build();
     }
 
 
-    public User getUserFromDB(Long id) throws Exception {
+    @Override
+    public UserInfoResponse getUser(UUID id) throws Exception {
+        Optional<User> optionalUser = userRepository.getUserById(id);
+
+        User userModel = optionalUser.orElseThrow(() -> new Exception("User not found"));
+
+        return UserInfoResponse.builder()
+                .userId(userModel.getId())
+                .firstName(userModel.getFirstName())
+                .lastName(userModel.getLastName())
+                .email(userModel.getEmail())
+                .mobileNumber(userModel.getMobileNumber())
+                .dob(userModel.getDob())
+                .gender(userModel.getGender())
+                .nationality(userModel.getNationality())
+                .userStatus(userModel.getUserStatus())
+                .accountType(userModel.getAccountType())
+                .kycStatus(userModel.getKycStatus())
+                .kycVerifiedAt(userModel.getKycVerifiedAt())
+                .kycVerifiedBy(userModel.getKycVerifiedBy())
+                .tradingStatus(userModel.getTradingStatus())
+                .riskProfile(userModel.getRiskProfile())
+                .createdAt(userModel.getCreatedAt())
+                .updatedAt(userModel.getUpdatedAt())
+                .lastActiveAt(userModel.getLastActiveAt())
+                .deletedAt(userModel.getDeletedAt())
+                .build();
+    }
+
+
+    public User getUserFromDB(UUID id) throws Exception {
         Optional<User> optionalUser = userRepository.getUserById(id);
 
         User val = optionalUser.orElseThrow(() -> new Exception("User not found"));
@@ -67,7 +111,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void updateUser(Long id, RegisterUserRequest body) throws Exception {
+    public UserInfoResponse updateUser(UUID id, UserInfoRequest body) throws Exception {
 
         User existingUser = getUserFromDB(id);
 
@@ -92,14 +136,45 @@ public class UserServiceImpl implements UserService {
             existingUser.setDob(body.getDob());
         }
 
+        if (body.getGender() != null) {
+            existingUser.setGender(body.getGender());
+        }
+
+        if (body.getNationality() != null && !body.getNationality().trim().isEmpty()) {
+            existingUser.setNationality(body.getNationality());
+        }
+
         // Update the updatedAt timestamp
         existingUser.setUpdatedAt(LocalDateTime.now());
 
-        userRepository.save(existingUser);
+        // Save and return the updated user
+        User updatedUser = userRepository.save(existingUser);
+
+        return UserInfoResponse.builder()
+                .userId(updatedUser.getId())
+                .firstName(updatedUser.getFirstName())
+                .lastName(updatedUser.getLastName())
+                .email(updatedUser.getEmail())
+                .mobileNumber(updatedUser.getMobileNumber())
+                .dob(updatedUser.getDob())
+                .gender(updatedUser.getGender())
+                .nationality(updatedUser.getNationality())
+                .userStatus(updatedUser.getUserStatus())
+                .accountType(updatedUser.getAccountType())
+                .kycStatus(updatedUser.getKycStatus())
+                .kycVerifiedAt(updatedUser.getKycVerifiedAt())
+                .kycVerifiedBy(updatedUser.getKycVerifiedBy())
+                .tradingStatus(updatedUser.getTradingStatus())
+                .riskProfile(updatedUser.getRiskProfile())
+                .createdAt(updatedUser.getCreatedAt())
+                .updatedAt(updatedUser.getUpdatedAt())
+                .lastActiveAt(updatedUser.getLastActiveAt())
+                .deletedAt(updatedUser.getDeletedAt())
+                .build();
     }
 
     @Override
-    public void updateUserStatus(Long id, UserStatus status) {
+    public void updateUserStatus(UUID id, UserStatus status) {
         userRepository.updateUserStatus(id, status, LocalDateTime.now());
     }
 }

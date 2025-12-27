@@ -11,14 +11,19 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.UUID;
 
 @Repository
-public interface UserRepository extends JpaRepository<User, Long> {
+public interface UserRepository extends JpaRepository<User, UUID> {
 
-    Optional<User> getUserById(Long id);
+    Optional<User> getUserById(UUID id);
+
+    Optional<User> getUserByEmail(String email);
+
+    boolean existsByEmail(String email);
 
     @Modifying
     @Transactional
     @Query("UPDATE User u SET u.userStatus = :status, u.updatedAt = :updatedAt WHERE u.id = :id")
-    void updateUserStatus(@Param("id") Long id, @Param("status") UserStatus status, @Param("updatedAt") LocalDateTime updatedAt);
+    void updateUserStatus(@Param("id") UUID id, @Param("status") UserStatus status, @Param("updatedAt") LocalDateTime updatedAt);
 }

@@ -1,0 +1,182 @@
+[
+  {
+    "firstName": "John",
+    "lastName": "Doe",
+    "email": "john.doe@example.com",
+    "mobileNumber": "+1-555-0123",
+    "dob": "1990-05-15",
+    "gender": "MALE",
+    "nationality": "United States"
+  },
+  {
+    "firstName": "Sarah",
+    "lastName": "Johnson",
+    "email": "sarah.johnson@example.com",
+    "mobileNumber": "+44-20-7946-0958",
+    "dob": "1985-11-22",
+    "gender": "FEMALE",
+    "nationality": "United Kingdom"
+  },
+  {
+    "firstName": "Priya",
+    "lastName": "Sharma",
+    "email": "priya.sharma@example.com",
+    "mobileNumber": "+91-98765-43210",
+    "dob": "1992-03-18",
+    "gender": "FEMALE",
+    "nationality": "India"
+  },
+  {
+    "firstName": "Hans",
+    "lastName": "Müller",
+    "email": "hans.muller@example.com",
+    "mobileNumber": "+49-30-12345678",
+    "dob": "1987-07-25",
+    "gender": "MALE",
+    "nationality": "Germany"
+  },
+  {
+    "firstName": "Hiroshi",
+    "lastName": "Tanaka",
+    "email": "hiroshi.tanaka@example.com",
+    "mobileNumber": "+81-3-1234-5678",
+    "dob": "1993-09-10",
+    "gender": "MALE",
+    "nationality": "Japan"
+  },
+  {
+    "firstName": "Maria",
+    "lastName": "Garcia",
+    "email": "maria.garcia@example.com",
+    "mobileNumber": "+34-91-123-4567",
+    "dob": "1989-12-08",
+    "gender": "FEMALE",
+    "nationality": "Spain"
+  },
+  {
+    "firstName": "Alex",
+    "lastName": "Smith",
+    "email": "alex.smith@example.com",
+    "mobileNumber": "+1-416-555-9876",
+    "dob": "1995-08-30",
+    "gender": "OTHER",
+    "nationality": "Canada"
+  },
+  {
+    "firstName": "Emma",
+    "lastName": "Wilson",
+    "email": "emma.wilson@example.com",
+    "mobileNumber": "+61-2-9876-5432",
+    "dob": "1991-04-17",
+    "gender": "FEMALE",
+    "nationality": "Australia"
+  },
+  {
+    "firstName": "Mohammed",
+    "lastName": "Al-Rashid",
+    "email": "mohammed.alrashid@example.com",
+    "mobileNumber": "+971-4-123-4567",
+    "dob": "1988-06-05",
+    "gender": "MALE",
+    "nationality": "United Arab Emirates"
+  },
+  {
+    "firstName": "Sophie",
+    "lastName": "Dubois",
+    "email": "sophie.dubois@example.com",
+    "mobileNumber": "+33-1-42-86-82-00",
+    "dob": "1994-02-14",
+    "gender": "FEMALE",
+    "nationality": "France"
+  },
+  {
+    "firstName": "Chen",
+    "lastName": "Wei",
+    "email": "chen.wei@example.com",
+    "mobileNumber": "+86-10-1234-5678",
+    "dob": "1990-11-28",
+    "gender": "MALE",
+    "nationality": "China"
+  },
+  {
+    "firstName": "Isabella",
+    "lastName": "Rossi",
+    "email": "isabella.rossi@example.com",
+    "mobileNumber": "+39-06-1234-5678",
+    "dob": "1986-09-20",
+    "gender": "FEMALE",
+    "nationality": "Italy"
+  },
+  {
+    "firstName": "Raj",
+    "lastName": "Patel",
+    "email": "raj.patel@example.com",
+    "mobileNumber": "+91-22-9876-5432",
+    "dob": "1992-07-12",
+    "gender": "MALE",
+    "nationality": "India"
+  },
+  {
+    "firstName": "Taylor",
+    "lastName": "Anderson",
+    "email": "taylor.anderson@example.com",
+    "mobileNumber": "+1-555-8765",
+    "dob": "1988-12-05",
+    "gender": "PREFER_NOT_TO_SAY",
+    "nationality": "United States"
+  },
+  {
+    "firstName": "Lars",
+    "lastName": "Johansson",
+    "email": "lars.johansson@example.com",
+    "mobileNumber": "+46-8-123-456-78",
+    "dob": "1991-03-22",
+    "gender": "MALE",
+    "nationality": "Sweden"
+  },
+  {
+    "firstName": "Olivia",
+    "lastName": "Brown",
+    "email": "olivia.brown@example.com",
+    "mobileNumber": "+1-604-555-1234",
+    "dob": "1993-10-09",
+    "gender": "FEMALE",
+    "nationality": "Canada"
+  },
+  {
+    "firstName": "Miguel",
+    "lastName": "Santos",
+    "email": "miguel.santos@example.com",
+    "mobileNumber": "+55-11-98765-4321",
+    "dob": "1989-05-16",
+    "gender": "MALE",
+    "nationality": "Brazil"
+  },
+  {
+    "firstName": "Yuki",
+    "lastName": "Nakamura",
+    "email": "yuki.nakamura@example.com",
+    "mobileNumber": "+81-90-1234-5678",
+    "dob": "1996-01-30",
+    "gender": "FEMALE",
+    "nationality": "Japan"
+  },
+  {
+    "firstName": "David",
+    "lastName": "Kim",
+    "email": "david.kim@example.com",
+    "mobileNumber": "+82-2-1234-5678",
+    "dob": "1990-08-14",
+    "gender": "MALE",
+    "nationality": "South Korea"
+  },
+  {
+    "firstName": "Fatima",
+    "lastName": "Hassan",
+    "email": "fatima.hassan@example.com",
+    "mobileNumber": "+20-2-1234-5678",
+    "dob": "1994-11-11",
+    "gender": "FEMALE",
+    "nationality": "Egypt"
+  }
+]
