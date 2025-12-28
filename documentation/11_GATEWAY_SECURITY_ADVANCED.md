@@ -232,7 +232,7 @@ networks:
 services:
   # API Gateway - ONLY service exposed to outside
   api-gateway:
-    build: ./services/api-gateway
+    build: ../services/api-gateway
     ports:
       - "8765:8765"  # ✅ Exposed to host/internet
     networks:
@@ -246,7 +246,7 @@ services:
 
   # Auth Service - NOT exposed publicly
   auth-service:
-    build: ./services/auth-service
+    build: ../services/auth-service
     # ❌ NO ports exposed to host
     networks:
       - internal  # Only accessible within Docker network
@@ -260,7 +260,7 @@ services:
 
   # User Service - NOT exposed publicly
   user-service:
-    build: ./services/user-service
+    build: ../services/user-service
     # ❌ NO ports exposed to host
     networks:
       - internal
@@ -273,7 +273,7 @@ services:
 
   # Eureka Server
   eureka-server:
-    build: ./services/naming-server
+    build: ../services/naming-server
     ports:
       - "8761:8761"  # Exposed for management console
     networks:
