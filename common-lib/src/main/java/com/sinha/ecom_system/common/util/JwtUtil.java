@@ -1,9 +1,8 @@
-package com.sinha.ecom_system.auth_service.util;
+package com.sinha.ecom_system.common.util;
 
-import com.sinha.ecom_system.auth_service.config.JwtProperties;
+import com.sinha.ecom_system.common.config.JwtProperties;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -25,7 +24,6 @@ import java.util.UUID;
  * Uses HMAC-SHA256 algorithm for signing
  */
 @Component
-@Slf4j
 public class JwtUtil {
 
     private final JwtProperties jwtProperties;
@@ -105,7 +103,6 @@ public class JwtUtil {
                     .parseSignedClaims(token)
                     .getPayload();
         } catch (JwtException e) {
-            log.error("Invalid JWT token: {}", e.getMessage());
             throw e;
         }
     }
@@ -183,15 +180,15 @@ public class JwtUtil {
             parseToken(token);
             return true;
         } catch (SecurityException e) {
-            log.error("Invalid JWT signature: {}", e.getMessage());
+            System.out.println("Invalid JWT signature: {}" + e.getMessage());
         } catch (MalformedJwtException e) {
-            log.error("Invalid JWT token: {}", e.getMessage());
+            System.out.println("Invalid JWT token: {}" + e.getMessage());
         } catch (ExpiredJwtException e) {
-            log.error("JWT token is expired: {}", e.getMessage());
+            System.out.println("JWT token is expired: {}" + e.getMessage());
         } catch (UnsupportedJwtException e) {
-            log.error("JWT token is unsupported: {}", e.getMessage());
+            System.out.println("JWT token is unsupported: {}" + e.getMessage());
         } catch (IllegalArgumentException e) {
-            log.error("JWT claims string is empty: {}", e.getMessage());
+            System.out.println("JWT claims string is empty: {}" + e.getMessage());
         }
         return false;
     }

@@ -1,6 +1,5 @@
 package com.sinha.ecom_system.auth_service.service;
 
-import com.sinha.ecom_system.auth_service.config.JwtProperties;
 import com.sinha.ecom_system.auth_service.dto.request.LoginRequest;
 import com.sinha.ecom_system.auth_service.dto.request.RefreshTokenRequest;
 import com.sinha.ecom_system.auth_service.dto.request.RegisterRequest;
@@ -14,10 +13,11 @@ import com.sinha.ecom_system.auth_service.proxy.UserProxy;
 import com.sinha.ecom_system.auth_service.repository.AuthRepository;
 import com.sinha.ecom_system.auth_service.repository.RefreshTokenRepository;
 import com.sinha.ecom_system.auth_service.repository.RoleRepository;
-import com.sinha.ecom_system.auth_service.util.JwtUtil;
+import com.sinha.ecom_system.common.config.JwtProperties;
 import com.sinha.ecom_system.common.dto.ApiResponse;
 import com.sinha.ecom_system.common.dto.UserInfoRequest;
 import com.sinha.ecom_system.common.dto.UserInfoResponse;
+import com.sinha.ecom_system.common.util.JwtUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

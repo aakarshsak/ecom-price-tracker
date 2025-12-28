@@ -1,8 +1,7 @@
-package com.sinha.ecom_system.auth_service.config;
+package com.sinha.ecom_system.common.config;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration

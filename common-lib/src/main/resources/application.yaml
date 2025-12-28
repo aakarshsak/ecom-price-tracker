@@ -1,3 +1,18 @@
 spring:
   application:
-    name: common-service
+    name: common-lib
+  # Redis Configuration
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD}
+      database: 0
+
+
+# JWT Configuration
+jwt:
+  secret-key: ${JWT_SECRET_KEY}
+  access-token-expiry: ${JWT_ACCESS_TOKEN_EXPIRY}
+  refresh-token-expiry: ${JWT_REFRESH_TOKEN_EXPIRY}
+  issuer: ${JWT_ISSUER}

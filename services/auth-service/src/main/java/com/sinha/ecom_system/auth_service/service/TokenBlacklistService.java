@@ -43,9 +43,9 @@ public class TokenBlacklistService {
         
         if (ttl > 0) {
             redisTemplate.opsForValue().set(key, "blacklisted", ttl, TimeUnit.MILLISECONDS);
-            log.debug("Token {} added to blacklist with TTL: {} ms", tokenId, ttl);
+            System.out.println("Token {} added to blacklist with TTL: {} ms" + tokenId + " " + ttl);
         } else {
-            log.warn("Token {} is already expired, not adding to blacklist", tokenId);
+            System.out.println("Token {} is already expired, not adding to blacklist" + tokenId);
         }
     }
 
@@ -60,7 +60,7 @@ public class TokenBlacklistService {
         Boolean exists = redisTemplate.hasKey(key);
         
         if (Boolean.TRUE.equals(exists)) {
-            log.debug("Token {} is blacklisted", tokenId);
+            System.out.println("Token {} is blacklisted" + tokenId);
             return true;
         }
         
@@ -75,7 +75,7 @@ public class TokenBlacklistService {
     public void removeFromBlacklist(String tokenId) {
         String key = BLACKLIST_PREFIX + tokenId;
         redisTemplate.delete(key);
-        log.debug("Token {} removed from blacklist", tokenId);
+        System.out.println("Token {} removed from blacklist" + tokenId);
     }
 
     /**
