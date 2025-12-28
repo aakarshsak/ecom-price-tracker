@@ -124,8 +124,9 @@ public class AuthController {
         try {
             // Extract access token from Authorization header
             String authHeader = request.getHeader("Authorization");
+            UUID userId = UUID.fromString(request.getHeader("X-User-Id"));
             String accessToken = null;
-            
+
             if (authHeader != null && authHeader.startsWith("Bearer ")) {
                 accessToken = authHeader.substring(7); // Remove "Bearer " prefix
             }
@@ -133,10 +134,6 @@ public class AuthController {
             if (accessToken == null) {
                 throw new RuntimeException("Access token not provided");
             }
-            
-            // Get userId from SecurityContext (populated by JwtAuthenticationFilter)
-            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            UUID userId = UUID.fromString(authentication.getPrincipal().toString());
             
             // Blacklist access token and revoke refresh tokens
             authService.logout(userId, accessToken);

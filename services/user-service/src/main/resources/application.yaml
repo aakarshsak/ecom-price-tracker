@@ -37,3 +37,7 @@ eureka:
     ip-address: 127.0.0.1
 
 
+api-gateway:
+  secret-key: ${API_GATEWAY_SECRET_KEY}
+
+

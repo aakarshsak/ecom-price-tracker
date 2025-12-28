@@ -27,3 +27,6 @@ jwt:
   access-token-expiry: ${JWT_ACCESS_TOKEN_EXPIRY}
   refresh-token-expiry: ${JWT_REFRESH_TOKEN_EXPIRY}
   issuer: ${JWT_ISSUER}
+
+api-gateway:
+  secret-key: ${API_GATEWAY_SECRET_KEY}
