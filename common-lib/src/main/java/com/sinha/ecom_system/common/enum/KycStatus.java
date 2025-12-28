@@ -1,4 +1,4 @@
-package com.sinha.ecom_system.user_service.model;
+package com.sinha.ecom_system.common;
 
 /**
  * KYC (Know Your Customer) verification status

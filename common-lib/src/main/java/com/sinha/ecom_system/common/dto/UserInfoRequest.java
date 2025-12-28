@@ -1,18 +1,16 @@
-package com.sinha.ecom_system.user_service.dto;
+package com.sinha.ecom_system.common.dto;
 
-import com.sinha.ecom_system.user_service.model.*;
-import jakarta.persistence.*;
+import com.sinha.ecom_system.common.Gender;
 import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.UUID;
 
 /**
  * Request DTO for user registration
  */
 @Data
+@Builder
 public class UserInfoRequest {
 
     // Basic Information

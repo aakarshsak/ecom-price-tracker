@@ -1,8 +1,7 @@
 package com.sinha.ecom_system.user_service.controller;
 
+import com.sinha.ecom_system.common.dto.*;
 import com.sinha.ecom_system.user_service.Constants;
-import com.sinha.ecom_system.user_service.dto.*;
-import com.sinha.ecom_system.user_service.model.UserStatus;
 import com.sinha.ecom_system.user_service.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -59,9 +58,9 @@ public class UserController {
     }
 
     @PatchMapping("/{id}/update-status")
-    public ResponseEntity<BasicResponse> makeUserActive(@PathVariable UUID id, @RequestParam(defaultValue = "ACTIVE") UserStatus status) {
+    public ResponseEntity<MessageResponse> makeUserActive(@PathVariable UUID id, @RequestParam(defaultValue = "ACTIVE") UserStatus status) {
         userService.updateUserStatus(id, status);
         return ResponseEntity.status(HttpStatus.NO_CONTENT)
-                .body(BasicResponse.builder().build());
+                .body(MessageResponse.builder().build());
     }
 }

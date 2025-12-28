@@ -1,8 +1,8 @@
 package com.sinha.ecom_system.auth_service.proxy;
 
-import com.sinha.ecom_system.auth_service.dto.response.ApiResponse;
-import com.sinha.ecom_system.auth_service.dto.user.UserInfoRequest;
-import com.sinha.ecom_system.auth_service.dto.user.UserInfoResponse;
+import com.sinha.ecom_system.common.dto.ApiResponse;
+import com.sinha.ecom_system.common.dto.UserInfoRequest;
+import com.sinha.ecom_system.common.dto.UserInfoResponse;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

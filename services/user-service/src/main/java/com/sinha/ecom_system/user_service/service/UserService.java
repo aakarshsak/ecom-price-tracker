@@ -1,8 +1,8 @@
 package com.sinha.ecom_system.user_service.service;
 
-import com.sinha.ecom_system.user_service.dto.UserInfoRequest;
-import com.sinha.ecom_system.user_service.dto.UserInfoResponse;
-import com.sinha.ecom_system.user_service.model.UserStatus;
+import com.sinha.ecom_system.common.dto.UserInfoRequest;
+import com.sinha.ecom_system.common.dto.UserInfoResponse;
+import com.sinha.ecom_system.common.dto.UserStatus;
 
 import java.util.UUID;
 

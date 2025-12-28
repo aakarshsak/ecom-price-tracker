@@ -1,4 +1,4 @@
-package com.sinha.ecom_system.auth_service.dto.response;
+package com.sinha.ecom_system.common.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

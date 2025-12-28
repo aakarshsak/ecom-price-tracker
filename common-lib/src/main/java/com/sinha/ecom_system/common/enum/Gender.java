@@ -1,4 +1,4 @@
-package com.sinha.ecom_system.auth_service.model.user;
+package com.sinha.ecom_system.common;
 
 /**
  * Gender options for user profile

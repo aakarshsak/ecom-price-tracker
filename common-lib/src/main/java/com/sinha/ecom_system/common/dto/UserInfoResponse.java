@@ -1,7 +1,12 @@
-package com.sinha.ecom_system.auth_service.dto.user;
+package com.sinha.ecom_system.common.dto;
 
-import com.sinha.ecom_system.auth_service.model.UserStatus;
-import com.sinha.ecom_system.auth_service.model.user.*;
+
+import com.sinha.ecom_system.common.*;
+import com.sinha.ecom_system.common.AccountType;
+import com.sinha.ecom_system.common.Gender;
+import com.sinha.ecom_system.common.KycStatus;
+import com.sinha.ecom_system.common.TradingStatus;
+import com.sinha.ecom_system.common.RiskProfile;
 import lombok.Builder;
 import lombok.Data;
 

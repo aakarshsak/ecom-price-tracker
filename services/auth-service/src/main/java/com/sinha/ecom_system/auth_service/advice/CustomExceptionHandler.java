@@ -1,6 +1,6 @@
 package com.sinha.ecom_system.auth_service.advice;
 
-import com.sinha.ecom_system.auth_service.dto.response.ErrorResponse;
+import com.sinha.ecom_system.common.dto.ErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ProblemDetail;

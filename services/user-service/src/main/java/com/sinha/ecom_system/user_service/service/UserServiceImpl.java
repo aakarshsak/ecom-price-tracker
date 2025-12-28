@@ -1,10 +1,10 @@
 package com.sinha.ecom_system.user_service.service;
 
-import com.sinha.ecom_system.user_service.dto.UserInfoRequest;
-import com.sinha.ecom_system.user_service.dto.UserInfoResponse;
-import com.sinha.ecom_system.user_service.model.RiskProfile;
+import com.sinha.ecom_system.common.RiskProfile;
+import com.sinha.ecom_system.common.dto.UserInfoRequest;
+import com.sinha.ecom_system.common.dto.UserInfoResponse;
+import com.sinha.ecom_system.common.dto.UserStatus;
 import com.sinha.ecom_system.user_service.model.User;
-import com.sinha.ecom_system.user_service.model.UserStatus;
 import com.sinha.ecom_system.user_service.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

@@ -1,4 +1,4 @@
-package com.sinha.ecom_system.auth_service.model.user;
+package com.sinha.ecom_system.common;
 
 /**
  * User risk tolerance profile for investment recommendations
