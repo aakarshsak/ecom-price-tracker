@@ -1,5 +1,6 @@
 package com.sinha.ecom_system.user_service.repository;
 
+import com.sinha.ecom_system.common.enums.UserStatus;
 import com.sinha.ecom_system.user_service.model.User;
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;

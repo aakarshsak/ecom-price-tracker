@@ -2,7 +2,7 @@ package com.sinha.ecom_system.user_service.service;
 
 import com.sinha.ecom_system.common.dto.UserInfoRequest;
 import com.sinha.ecom_system.common.dto.UserInfoResponse;
-import com.sinha.ecom_system.common.dto.UserStatus;
+import com.sinha.ecom_system.common.enums.UserStatus;
 
 import java.util.UUID;
 

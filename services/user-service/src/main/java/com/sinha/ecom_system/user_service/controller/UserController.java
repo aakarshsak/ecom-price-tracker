@@ -1,6 +1,7 @@
 package com.sinha.ecom_system.user_service.controller;
 
 import com.sinha.ecom_system.common.dto.*;
+import com.sinha.ecom_system.common.enums.UserStatus;
 import com.sinha.ecom_system.user_service.Constants;
 import com.sinha.ecom_system.user_service.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;

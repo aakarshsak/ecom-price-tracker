@@ -1,6 +1,6 @@
 package com.sinha.ecom_system.common.dto;
 
-import com.sinha.ecom_system.common.Gender;
+import com.sinha.ecom_system.common.enums.Gender;
 import lombok.Builder;
 import lombok.Data;
 

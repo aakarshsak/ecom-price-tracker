@@ -1,12 +1,7 @@
 package com.sinha.ecom_system.common.dto;
 
 
-import com.sinha.ecom_system.common.*;
-import com.sinha.ecom_system.common.AccountType;
-import com.sinha.ecom_system.common.Gender;
-import com.sinha.ecom_system.common.KycStatus;
-import com.sinha.ecom_system.common.TradingStatus;
-import com.sinha.ecom_system.common.RiskProfile;
+import com.sinha.ecom_system.common.enums.*;
 import lombok.Builder;
 import lombok.Data;
 

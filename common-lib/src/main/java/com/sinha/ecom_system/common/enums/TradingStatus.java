@@ -1,4 +1,4 @@
-package com.sinha.ecom_system.common;
+package com.sinha.ecom_system.common.enums;
 
 /**
  * Trading permission status for users

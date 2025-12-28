@@ -1,4 +1,4 @@
-package com.sinha.ecom_system.common.dto;
+package com.sinha.ecom_system.common.enums;
 
 public enum UserStatus {
     ACTIVE,

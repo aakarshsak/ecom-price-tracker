@@ -1,6 +1,11 @@
 package com.sinha.ecom_system.user_service.model;
 
-
+import com.sinha.ecom_system.common.enums.AccountType;
+import com.sinha.ecom_system.common.enums.Gender;
+import com.sinha.ecom_system.common.enums.KycStatus;
+import com.sinha.ecom_system.common.enums.TradingStatus;
+import com.sinha.ecom_system.common.enums.RiskProfile;
+import com.sinha.ecom_system.common.enums.UserStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
