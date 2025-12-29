@@ -2,6 +2,7 @@ package com.sinha.ecom_system.api_gateway.filter;
 
 import com.sinha.ecom_system.api_gateway.service.ReactiveTokenBlacklistService;
 import com.sinha.ecom_system.api_gateway.util.ReactiveJwtUtil;
+import com.sinha.ecom_system.common.contants.CommonConstants;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
@@ -100,10 +101,10 @@ public class JwtAuthenticationGlobalFilter implements GlobalFilter, Ordered {
 
                     // Add user context to request headers for downstream services
                     ServerHttpRequest mutatedRequest = request.mutate()
-                        .header("X-User-Id", userId.toString())
-                        .header("X-User-Email", email)
-                        .header("X-User-Roles", String.join(",", roles))
-                        .header("X-User-Permissions", String.join(",", permissions))
+                        .header(CommonConstants.HEADER_USER_ID, userId.toString())
+                        .header(CommonConstants.HEADER_EMAIL, email)
+                        .header(CommonConstants.HEADER_USER_ROLES, String.join(",", roles))
+                        .header(CommonConstants.HEADER_USER_PERMISSIONS, String.join(",", permissions))
                         .build();
 
                     ServerWebExchange mutatedExchange = exchange.mutate()
